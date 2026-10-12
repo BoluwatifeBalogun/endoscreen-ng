@@ -14,3 +14,4 @@ gunicorn==26.2.0
 PyMySQL==1.1.1          # MySQL driver (write-up Table 3.4)
 psycopg2-binary>=2.9.10 # PostgreSQL driver for free hosted databases
 pytest==9.1.1
+cryptography
