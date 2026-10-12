@@ -1,0 +1,206 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import icon, risk_badge %}
+{% block title %}EndoScreen NG{% endblock %}
+{% block body_class %}page-landing{% endblock %}
+{% block content %}
+
+<section class="hero">
+  <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+  <div class="container hero-grid">
+    <div class="hero-copy">
+      <p class="eyebrow reveal">{{ icon('map-pin', 14) }}Built for primary healthcare in all 36 states and the FCT</p>
+      <h1 class="display" data-split>Catch hormonal disorders at the first visit, not the fifth.</h1>
+      <p class="lead reveal" style="--i:2">EndoScreen NG turns the symptoms, vital signs and any lab values you already have into an instant risk estimate for thyroid disease, PCOS, diabetes and adrenal insufficiency, so the right patients are referred early.</p>
+      <div class="hero-cta reveal" style="--i:3">
+        {% if g.user %}
+          <a class="btn btn-primary btn-lg shimmer" href="{{ url_for('main.screen') }}">Start a screening{{ icon('arrow-right', 18) }}</a>
+          <a class="btn btn-ghost btn-lg" href="{{ url_for('main.dashboard') }}">Open dashboard</a>
+        {% elif g.admin %}
+          <a class="btn btn-primary btn-lg shimmer" href="{{ url_for('admin.overview') }}">Open admin panel{{ icon('arrow-right', 18) }}</a>
+        {% else %}
+          <a class="btn btn-primary btn-lg shimmer" href="{{ url_for('main.register') }}">Create a free account{{ icon('arrow-right', 18) }}</a>
+          <a class="btn btn-ghost btn-lg" href="{{ url_for('main.login') }}">Sign in</a>
+        {% endif %}
+      </div>
+      <ul class="hero-points reveal" style="--i:4">
+        <li>{{ icon('check', 16) }}Works without a laboratory</li>
+        <li>{{ icon('check', 16) }}Result in under a minute</li>
+        <li>{{ icon('check', 16) }}Explains every prediction</li>
+      </ul>
+    </div>
+
+    <div class="hero-visual reveal" style="--i:2" aria-hidden="true">
+      <div class="mock beam">
+        <div class="mock-head">
+          <span class="mock-dot"></span><span>Screening result</span><span class="mock-ref">PHC/0412</span>
+        </div>
+        <div class="mock-body">
+          <div class="mock-gauge">
+            <svg viewBox="0 0 200 116">
+              <path d="M16 104a84 84 0 0 1 168 0" fill="none" stroke="#E8F7EF" stroke-width="16" stroke-linecap="round"/>
+              <path class="gauge-arc" data-gauge="0.82" d="M16 104a84 84 0 0 1 168 0" fill="none" stroke="#B91C1C" stroke-width="16" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"/>
+            </svg>
+            <div class="mock-score"><b data-count="82" data-suffix="%">82%</b><span>likelihood</span></div>
+          </div>
+          {{ risk_badge('High') }}
+          <p class="mock-line">Pattern closest to <b>Hypothyroidism</b></p>
+          <div class="mock-bars">
+            <div><span>Hypothyroidism</span><i style="--v:.74"></i><em>74%</em></div>
+            <div><span>No imbalance</span><i style="--v:.18"></i><em>18%</em></div>
+            <div><span>PCOS</span><i style="--v:.05"></i><em>5%</em></div>
+          </div>
+        </div>
+      </div>
+      <div class="mock-chip mock-chip-a">{{ icon('activity', 16) }}TSH 9.8 mIU/L <b>High</b></div>
+      <div class="mock-chip mock-chip-b">{{ icon('file-text', 16) }}Refer for TSH and free T4</div>
+    </div>
+  </div>
+</section>
+
+<section class="proof" aria-label="Context and model performance">
+  <div class="container proof-grid">
+    <div class="proof-item reveal"><b>&lt;<span data-count="200">200</span></b><span>endocrinologists serve the whole country</span></div>
+    <div class="proof-item reveal" style="--i:1"><b><span data-count="220">220</span>M+</b><span>people depend on that small pool of specialists</span></div>
+    {% if stats %}
+    <div class="proof-item reveal" style="--i:2"><b><span data-count="{{ (stats.accuracy * 100)|round(1) }}" data-decimals="1">{{ (stats.accuracy * 100)|round(1) }}</span>%</b><span>test accuracy of the active {{ stats.algorithm }} model</span></div>
+    <div class="proof-item reveal" style="--i:3"><b><span data-count="{{ (stats.sensitivity * 100)|round(0)|int }}">{{ (stats.sensitivity * 100)|round(0)|int }}</span>%</b><span>of imbalance cases flagged on the held-out test set</span></div>
+    {% else %}
+    <div class="proof-item reveal" style="--i:2"><b>3</b><span>algorithms compared: LR, Random Forest, SVM</span></div>
+    <div class="proof-item reveal" style="--i:3"><b>5</b><span>hormonal disorders screened in one form</span></div>
+    {% endif %}
+  </div>
+  <p class="container proof-note">Workforce figures as cited in the study this system implements. Model figures come from a simulated dataset and are shown in full on the model performance page.</p>
+</section>
+
+<section class="section" id="features">
+  <div class="container">
+    <header class="section-head reveal">
+      <p class="eyebrow eyebrow-plain">What it does</p>
+      <h2>A screening tool that fits how a health centre really works</h2>
+      <p>No specialist, no assay machine and no machine learning knowledge needed. Enter what you can observe and measure; the system does the rest.</p>
+    </header>
+    <div class="bento">
+      <article class="card spot bento-wide reveal">
+        <div class="card-icon">{{ icon('clipboard', 22) }}</div>
+        <h3>Guided four-step entry</h3>
+        <p>Tick boxes, dropdowns and numeric fields replace free text. Every value is range-checked in the browser and again on the server, so typing slips are caught before they reach the model.</p>
+        <div class="mini-steps" aria-hidden="true"><span class="on">1 Patient</span><span class="on">2 Symptoms</span><span>3 Lifestyle</span><span>4 Lab values</span></div>
+      </article>
+      <article class="card spot reveal" style="--i:1">
+        <div class="card-icon">{{ icon('flask', 22) }}</div>
+        <h3>Lab values are optional</h3>
+        <p>The model was trained to cope with missing tests. Add a glucometer reading or a TSH result when you have one and the estimate sharpens.</p>
+      </article>
+      <article class="card spot reveal">
+        <div class="card-icon">{{ icon('eye', 22) }}</div>
+        <h3>Shows its reasoning</h3>
+        <p>Each result lists the findings that moved the risk up or down, alongside reference ranges, in plain language.</p>
+      </article>
+      <article class="card spot reveal" style="--i:1">
+        <div class="card-icon">{{ icon('file-text', 22) }}</div>
+        <h3>Referral-ready advice</h3>
+        <p>Who to refer to, which confirmatory tests to request and what to tell the patient. Printable for the folder.</p>
+      </article>
+      <article class="card spot reveal" style="--i:2">
+        <div class="card-icon">{{ icon('clock', 22) }}</div>
+        <h3>Patient history</h3>
+        <p>Every screening is saved to your dashboard so you can search by card number and follow a patient over time.</p>
+      </article>
+      <article class="card spot reveal">
+        <div class="card-icon">{{ icon('lock', 22) }}</div>
+        <h3>Private by design</h3>
+        <p>Patients are recorded by card number, never by name. Passwords are hashed and each worker sees only their own records.</p>
+      </article>
+      <article class="card spot bento-wide card-dark reveal" style="--i:1">
+        <div class="card-icon">{{ icon('bar-chart', 22) }}</div>
+        <h3>Three algorithms, compared in the open</h3>
+        <p>Logistic Regression, Random Forest and Support Vector Machine are trained on the same data and scored on accuracy, precision, recall, F1 and AUC-ROC. The best one runs your screenings, and the full comparison is one click away.</p>
+        <div class="algo-row" aria-hidden="true"><span>Logistic Regression</span><span>Random Forest</span><span>SVM</span></div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section class="section section-tint" id="how">
+  <div class="container">
+    <header class="section-head reveal">
+      <p class="eyebrow eyebrow-plain">How it works</p>
+      <h2>From first contact to referral decision in three steps</h2>
+    </header>
+    <ol class="steps-row">
+      <li class="reveal">
+        <span class="step-num">01</span>
+        <h3>Enter what you have</h3>
+        <p>Age, weight, height, blood pressure, the symptoms the patient reports and any lab result that is available.</p>
+      </li>
+      <li class="reveal" style="--i:1">
+        <span class="step-num">02</span>
+        <h3>The model scores the pattern</h3>
+        <p>Inputs are encoded and scaled exactly as in training, then classified across five disorders and a no-imbalance class.</p>
+      </li>
+      <li class="reveal" style="--i:2">
+        <span class="step-num">03</span>
+        <h3>Act on a clear result</h3>
+        <p>A low, moderate or high risk band, the most likely condition, the reasons behind it and recommended next steps.</p>
+      </li>
+    </ol>
+  </div>
+</section>
+
+<section class="section" id="conditions">
+  <div class="container split">
+    <header class="section-head section-head-left reveal">
+      <p class="eyebrow eyebrow-plain">Conditions screened</p>
+      <h2>Five common hormonal disorders in a single form</h2>
+      <p>Most tools look at one disorder at a time. Patients do not present that way: fatigue and weight change could be thyroid, adrenal or blood sugar. EndoScreen NG weighs them together.</p>
+      <a class="btn btn-ghost" href="{{ url_for('main.performance') if (g.user or g.admin) else url_for('main.login', next='/performance') }}">See how the model performs{{ icon('arrow-right', 16) }}</a>
+    </header>
+    <ul class="cond-list">
+      {% for name, gland, signs in [
+        ('Hypothyroidism', 'Thyroid', 'Fatigue, weight gain, feeling cold, hair thinning'),
+        ('Hyperthyroidism', 'Thyroid', 'Weight loss, heat intolerance, palpitations'),
+        ('Polycystic ovary syndrome', 'Ovaries', 'Irregular periods, acne, excess hair growth'),
+        ('Diabetes mellitus', 'Pancreas', 'Thirst, frequent urination, raised glucose'),
+        ('Adrenal insufficiency', 'Adrenal glands', 'Weakness, dizziness on standing, skin darkening')] %}
+      <li class="cond reveal" style="--i:{{ loop.index0 }}">
+        <span class="cond-gland">{{ gland }}</span>
+        <div><h3>{{ name }}</h3><p>{{ signs }}</p></div>
+        {{ icon('chevron-right', 18) }}
+      </li>
+      {% endfor %}
+    </ul>
+  </div>
+</section>
+
+<section class="section section-tint">
+  <div class="container">
+    <header class="section-head reveal">
+      <p class="eyebrow eyebrow-plain">Who it is for</p>
+      <h2>Made for the people who see the patient first</h2>
+    </header>
+    <div class="who-grid">
+      {% for title, text, ic in [
+        ('Doctors and nurses', 'A second look that helps separate overlapping symptoms before ordering expensive tests.', 'heart-pulse'),
+        ('Community health officers', 'A structured way to decide who needs referral, even where there is no laboratory.', 'users'),
+        ('Facility managers', 'Fewer unnecessary lab requests and better use of scarce specialist time.', 'layers'),
+        ('Researchers and policy makers', 'Evidence on how an affordable AI tool behaves in a Nigerian primary care setting.', 'book')] %}
+      <article class="who reveal" style="--i:{{ loop.index0 }}">
+        <span class="who-icon">{{ icon(ic, 20) }}</span>
+        <h3>{{ title }}</h3>
+        <p>{{ text }}</p>
+      </article>
+      {% endfor %}
+    </div>
+  </div>
+</section>
+
+<section class="cta-band">
+  <div class="container cta-inner reveal">
+    <div>
+      <h2>Screen your next patient in under a minute.</h2>
+      <p>Free for health workers. All you need is a phone or a computer.</p>
+    </div>
+    <a class="btn btn-light btn-lg" href="{{ url_for('main.screen') if g.user else url_for('main.register') }}">{{ 'Start a screening' if g.user else 'Create your account' }}{{ icon('arrow-right', 18) }}</a>
+  </div>
+</section>
+{% endblock %}

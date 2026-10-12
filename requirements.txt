@@ -1,0 +1,16 @@
+# Python 3.13. scikit-learn and numpy are pinned exactly because the shipped
+# model files in models/v1 were saved with these versions. If you change them,
+# retrain:  python -m endoscreen.ml.train
+Flask==3.1.3
+Flask-SQLAlchemy==3.1.1
+SQLAlchemy==2.1.4
+Werkzeug==3.1.8
+scikit-learn==1.9.1
+numpy==2.5.3
+pandas==3.0.5
+scipy==1.18.1
+joblib==1.6.0
+gunicorn==26.2.0
+PyMySQL==1.1.1          # MySQL driver (write-up Table 3.4)
+psycopg2-binary>=2.9.10 # PostgreSQL driver for free hosted databases
+pytest==9.1.1

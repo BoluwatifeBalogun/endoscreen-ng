@@ -1,0 +1,224 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import icon %}
+{% block title %}Model performance{% endblock %}
+{% block body_class %}page-app{% endblock %}
+{% set KEYS = ['logistic_regression', 'random_forest', 'svm'] %}
+{% set SERIES = {'logistic_regression': 's1', 'random_forest': 's2', 'svm': 's3'} %}
+{% set METRICS = [('accuracy', 'Accuracy'), ('precision', 'Precision'), ('recall', 'Recall'), ('f1', 'F1-score'), ('auc_roc', 'AUC-ROC')] %}
+{% set sel = m.models[selected] %}
+{% set ht = m.hypothesis_test %}
+{% set clean = m.dataset.cleaning %}
+{% block content %}
+<div class="container app">
+  <header class="page-head">
+    <div>
+      <p class="eyebrow eyebrow-plain">Model transparency · version {{ m.version }}</p>
+      <h1>Model performance</h1>
+      <p class="muted">How Logistic Regression, Random Forest and Support Vector Machine compare on the same data, and which one runs your screenings.</p>
+    </div>
+    {% if versions|length > 1 %}
+    <form method="get" class="filters">
+      <label for="version" class="sr-only">Model version</label>
+      <select id="version" name="version" data-autosubmit>{% for v in versions %}<option {{ 'selected' if v == m.version }}>{{ v }}</option>{% endfor %}</select>
+    </form>
+    {% endif %}
+  </header>
+
+  {% if m.version == 'v1' %}
+  <div class="alert alert-info">{{ icon('info', 18) }}<span><strong>Simulated data.</strong> Version v1 was trained on {{ clean.rows_clean }} simulated records generated from published clinical reference ranges, not on real patients. The figures below show how the pipeline behaves and must be re-established on real, ethically cleared data before clinical use.</span></div>
+  {% endif %}
+
+  <div class="tabs" role="group" aria-label="Choose a model to inspect">
+    {% for key in KEYS %}
+    <a class="tab {{ 'tab-on' if key == selected }}" href="{{ url_for('main.performance', version=m.version, model=key) }}" {% if key == selected %}aria-current="true"{% endif %}>
+      {{ m.models[key].name }}
+      {% if key == m.best_model %}<span class="pill pill-green">Best</span>{% endif %}
+      {% if active.version == m.version and active.algorithm_key == key %}<span class="pill">Active</span>{% endif %}
+    </a>
+    {% endfor %}
+  </div>
+
+  <section class="tiles" aria-label="{{ sel.name }} test-set metrics">
+    {% for key, label in METRICS %}
+    <div class="tile reveal" style="--i:{{ loop.index0 }}">
+      <span>{{ label }}</span>
+      <b>{% if key == 'auc_roc' %}<span data-count="{{ sel.test[key]|round(3) }}" data-decimals="3">{{ '%.3f'|format(sel.test[key]) }}</span>{% else %}<span data-count="{{ (sel.test[key] * 100)|round(1) }}" data-decimals="1">{{ '%.1f'|format(sel.test[key] * 100) }}</span>%{% endif %}</b>
+      <small>10-fold CV {{ '%.3f'|format(sel.cv[key].mean) }} ± {{ '%.3f'|format(sel.cv[key].std) }}</small>
+    </div>
+    {% endfor %}
+  </section>
+  <p class="table-foot">Held-out test set of {{ m.dataset.n_test }} records ({{ m.dataset.split }} split). Precision, recall and F1 are macro-averaged over the six classes.</p>
+
+  <div class="perf-grid">
+    <section class="card">
+      <h2 class="card-title">{{ icon('bar-chart', 18) }}Algorithm comparison</h2>
+      <div class="grouped" role="img" aria-label="Grouped bar chart of test metrics for the three algorithms. Values are in the table below.">
+        {% for key, label in METRICS %}
+        <div class="grouped-set">
+          <div class="grouped-bars">
+            {% for k in KEYS %}
+            {% set v = m.models[k].test[key] %}
+            <span class="gb {{ SERIES[k] }}" style="--v:{{ ((v - 0.5) / 0.5)|round(4) }}" title="{{ m.models[k].name }} {{ label }}: {{ '%.3f'|format(v) }}"><em>{{ '%.0f'|format(v * 100) if key != 'auc_roc' else ('%.2f'|format(v))[1:] }}</em></span>
+            {% endfor %}
+          </div>
+          <span class="grouped-label">{{ label }}</span>
+        </div>
+        {% endfor %}
+      </div>
+      <p class="legend">{% for k in KEYS %}<span><span class="key {{ SERIES[k] }}"></span>{{ m.models[k].name }}</span>{% endfor %}<span class="legend-note">Bars start at 0.50</span></p>
+      <div class="table-wrap">
+        <table class="table table-compact">
+          <caption class="sr-only">Test-set metrics by algorithm</caption>
+          <thead><tr><th scope="col">Algorithm</th>{% for key, label in METRICS %}<th scope="col" class="num">{{ label }}</th>{% endfor %}</tr></thead>
+          <tbody>
+            {% for k in KEYS %}
+            <tr class="{{ 'row-best' if k == m.best_model }}"><th scope="row"><span class="key {{ SERIES[k] }}"></span>{{ m.models[k].name }}</th>
+              {% for key, label in METRICS %}<td class="num">{{ '%.3f'|format(m.models[k].test[key]) }}</td>{% endfor %}</tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <p class="hint">Selection rule: h{{ m.selection_rule[1:] }}. {{ m.models[m.best_model].name }} scored {{ '%.3f'|format(m.models[m.best_model].cv.f1.mean) }}.</p>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">{{ icon('activity', 18) }}ROC curves: any imbalance vs none</h2>
+      <svg class="roc" viewBox="0 0 320 300" role="img" aria-label="ROC curves for the three algorithms. Area under the curve is listed in the legend.">
+        <g transform="translate(44 12)">
+          {% for t in [0, 0.25, 0.5, 0.75, 1] %}
+          <line x1="0" x2="250" y1="{{ 250 - 250 * t }}" y2="{{ 250 - 250 * t }}" class="grid"/>
+          <text x="-8" y="{{ 254 - 250 * t }}" text-anchor="end" class="tick">{{ t }}</text>
+          <text x="{{ 250 * t }}" y="268" text-anchor="middle" class="tick">{{ t }}</text>
+          {% endfor %}
+          <line x1="0" y1="250" x2="250" y2="0" class="chance"/>
+          {% for k in KEYS %}
+          {% set roc = m.models[k].test.screening.roc %}
+          <polyline class="roc-line {{ SERIES[k] }} {{ 'roc-sel' if k == selected }}" fill="none" points="{% for i in range(roc.fpr|length) %}{{ (roc.fpr[i] * 250)|round(1) }},{{ (250 - roc.tpr[i] * 250)|round(1) }} {% endfor %}"/>
+          {% endfor %}
+          <text x="125" y="286" text-anchor="middle" class="axis">False positive rate</text>
+          <text transform="rotate(-90)" x="-125" y="-32" text-anchor="middle" class="axis">True positive rate</text>
+        </g>
+      </svg>
+      <p class="legend legend-stack">{% for k in KEYS %}<span><span class="key {{ SERIES[k] }}"></span>{{ m.models[k].name }}: AUC {{ '%.3f'|format(m.models[k].test.screening.auc) }}</span>{% endfor %}</p>
+      <dl class="mini-stats">
+        <div><dt>Sensitivity at the flag threshold</dt><dd>{{ sel.test.screening.sensitivity|pct(1) }}</dd></div>
+        <div><dt>Specificity at the flag threshold</dt><dd>{{ sel.test.screening.specificity|pct(1) }}</dd></div>
+        <div><dt>Risk bands ({{ sel.name }})</dt><dd>Moderate ≥ {{ sel.risk_thresholds.moderate|pct }}, High ≥ {{ sel.risk_thresholds.high|pct }}</dd></div>
+      </dl>
+    </section>
+  </div>
+
+  <div class="perf-grid">
+    <section class="card">
+      <h2 class="card-title">{{ icon('grid', 18) }}Confusion matrix: {{ sel.name }}</h2>
+      {% set cm = sel.test.confusion_matrix %}
+      <div class="table-wrap">
+        <table class="cm">
+          <caption class="sr-only">Rows are the true class, columns the predicted class</caption>
+          <thead><tr><th scope="col" class="cm-corner">True ↓ / Predicted →</th>{% for c in m.classes %}<th scope="col">{{ S.CLASS_SHORT[c] }}</th>{% endfor %}</tr></thead>
+          <tbody>
+            {% for row in cm %}
+            {% set i = loop.index0 %}
+            {% set total = row|sum %}
+            <tr><th scope="row">{{ S.CLASS_SHORT[m.classes[i]] }}</th>
+              {% for v in row %}
+              {% set share = (v / total) if total else 0 %}
+              <td class="{{ 'cm-diag' if loop.index0 == i }} {{ 'cm-dark' if share > 0.5 }}" style="--a:{{ share|round(3) }}" title="{{ v }} of {{ total }} true {{ S.CLASS_SHORT[m.classes[i]] }} predicted as {{ S.CLASS_SHORT[m.classes[loop.index0]] }}">{{ v }}</td>
+              {% endfor %}
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <div class="table-wrap">
+        <table class="table table-compact">
+          <thead><tr><th scope="col">Class</th><th scope="col" class="num">Precision</th><th scope="col" class="num">Recall</th><th scope="col" class="num">F1</th><th scope="col" class="num">Support</th></tr></thead>
+          <tbody>{% for c in sel.test.per_class %}<tr><th scope="row">{{ S.CLASS_SHORT[c.label] }}</th><td class="num">{{ '%.3f'|format(c.precision) }}</td><td class="num">{{ '%.3f'|format(c.recall) }}</td><td class="num">{{ '%.3f'|format(c.f1) }}</td><td class="num">{{ c.support }}</td></tr>{% endfor %}</tbody>
+        </table>
+      </div>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">{{ icon('layers', 18) }}Hypothesis test</h2>
+      <p><strong>H0:</strong> there is no statistically significant difference in the predictive performance of the three algorithms.</p>
+      <div class="verdict {{ 'verdict-reject' if ht.reject_h0 else 'verdict-keep' }}">
+        {{ icon('check-circle' if ht.reject_h0 else 'info', 20) }}
+        <div>
+          {% if ht.reject_h0 %}
+          <strong>H0 is rejected for {{ ht.rejected_on|length }} of 5 metrics.</strong>
+          <p>The algorithms differ significantly on {{ ht.rejected_on|map('replace', 'auc_roc', 'AUC-ROC')|map('replace', 'f1', 'F1-score')|join(', ') }} (α = {{ ht.alpha }}), which supports H1 for those metrics.</p>
+          {% else %}
+          <strong>H0 is not rejected.</strong><p>No metric shows a significant difference between the algorithms at α = {{ ht.alpha }}.</p>
+          {% endif %}
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table class="table table-compact">
+          <caption class="sr-only">Friedman test per metric</caption>
+          <thead><tr><th scope="col">Metric</th><th scope="col" class="num">Friedman χ²</th><th scope="col" class="num">p-value</th><th scope="col">Decision</th></tr></thead>
+          <tbody>
+            {% for key, label in METRICS %}
+            {% set r = ht.metrics[key] %}
+            <tr><th scope="row">{{ label }}</th><td class="num">{{ '%.2f'|format(r.statistic) }}</td><td class="num">{{ '%.4f'|format(r.p_value) }}</td>
+              <td><span class="status status-{{ 'ok' if r.reject_h0 else 'muted' }}">{{ 'Reject H0' if r.reject_h0 else 'Fail to reject' }}</span></td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <p class="hint">Friedman test on matched scores from {{ ht.folds }}-fold stratified cross-validation of the training split. Pairwise Wilcoxon signed-rank tests with Holm correction, F1-score:
+        {% for pr in ht.metrics.f1.pairwise %}{{ m.models[pr.a].name }} vs {{ m.models[pr.b].name }} p = {{ '%.3f'|format(pr.p_holm) }}{{ '; ' if not loop.last else '.' }}{% endfor %}</p>
+    </section>
+  </div>
+
+  <div class="perf-grid">
+    <section class="card">
+      <h2 class="card-title">{{ icon('zap', 18) }}Most influential features</h2>
+      <p class="muted">Permutation importance for {{ m.models[m.best_model].name }}: the drop in macro F1 when one feature is shuffled on the test set.</p>
+      {% set top = m.feature_importance[:10] %}
+      {% set peak = top[0].importance if top[0].importance > 0 else 1 %}
+      <ul class="hbars">
+        {% for f in top %}
+        <li><span>{{ f.label }}</span><span class="hbar-track"><i style="--v:{{ ([f.importance, 0]|max / peak)|round(3) }}"></i></span><em>{{ '%.3f'|format(f.importance) }}</em></li>
+        {% endfor %}
+      </ul>
+    </section>
+
+    <section class="card">
+      <h2 class="card-title">{{ icon('flask', 18) }}With and without a laboratory</h2>
+      <p class="muted">The same test patients, scored again with every lab value removed to mimic a facility with no laboratory.</p>
+      <div class="table-wrap">
+        <table class="table table-compact">
+          <thead><tr><th scope="col">{{ sel.name }}</th><th scope="col" class="num">Available labs</th><th scope="col" class="num">No labs</th></tr></thead>
+          <tbody>
+            {% for key, label in METRICS %}
+            <tr><th scope="row">{{ label }}</th><td class="num">{{ '%.3f'|format(sel.test[key]) }}</td><td class="num">{{ '%.3f'|format(sel.test_without_labs[key]) }}</td></tr>
+            {% endfor %}
+            <tr><th scope="row">Sensitivity (any imbalance)</th><td class="num">{{ '%.3f'|format(sel.test.screening.sensitivity) }}</td><td class="num">{{ '%.3f'|format(sel.test_without_labs.screening.sensitivity) }}</td></tr>
+            <tr><th scope="row">Specificity (any imbalance)</th><td class="num">{{ '%.3f'|format(sel.test.screening.specificity) }}</td><td class="num">{{ '%.3f'|format(sel.test_without_labs.screening.specificity) }}</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+    </section>
+  </div>
+
+  <section class="card card-full">
+      <h2 class="card-title">{{ icon('database', 18) }}Dataset and preprocessing</h2>
+      <div class="ds-grid"><dl class="mini-stats">
+        <div><dt>Raw records</dt><dd>{{ clean.rows_raw }}</dd></div>
+        <div><dt>Duplicates removed</dt><dd>{{ clean.duplicates_removed }}</dd></div>
+        <div><dt>Out-of-range values blanked</dt><dd>{{ clean.out_of_range_values_blanked }}</dd></div>
+        <div><dt>Rows dropped (no usable age, weight or height)</dt><dd>{{ clean.rows_dropped_missing_essentials }}</dd></div>
+        <div><dt>Clean records</dt><dd>{{ clean.rows_clean }} ({{ m.dataset.n_train }} train, {{ m.dataset.n_test }} test)</dd></div>
+        <div><dt>Model features</dt><dd>{{ m.dataset.n_features }} ({{ sel.n_features_selected }} kept by feature selection)</dd></div>
+        <div><dt>Missing values</dt><dd>Median imputation plus a "not measured" flag per lab</dd></div>
+        <div><dt>Scaling</dt><dd>Z-score standardisation</dd></div>
+      </dl>
+      <ul class="dist">
+        {% for c, n in clean.class_distribution.items() %}
+        <li><span>{{ S.CLASS_SHORT[c] }}</span><span class="hbar-track"><i style="--v:{{ ([n / clean.rows_clean / 0.4, 1]|min)|round(3) }}"></i></span><em>{{ n }}</em></li>
+        {% endfor %}
+      </ul></div>
+  </section>
+</div>
+{% endblock %}

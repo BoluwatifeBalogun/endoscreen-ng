@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import icon, csrf, field_error with context %}
+{% block title %}New screening{% endblock %}
+{% block body_class %}page-app{% endblock %}
+
+{% macro number(name, spec, required=true) %}
+{% set label, unit, lo, hi, step = spec[0], spec[1], spec[2], spec[3], spec[4] %}
+<div class="field {{ 'has-error' if errors.get(name) }}">
+  <label for="{{ name }}">{{ label }}{% if not required %} <span class="optional">optional</span>{% endif %}</label>
+  <div class="input-wrap input-unit">
+    <input id="{{ name }}" name="{{ name }}" type="number" inputmode="decimal" min="{{ lo }}" max="{{ hi }}" step="{{ step }}" value="{{ form.get(name, '') }}" {{ 'required' if required }}
+           data-label="{{ label }}" data-unit="{{ unit }}" {% if spec[-1] %}aria-describedby="{{ name }}-hint"{% endif %}>
+    <span class="unit" {% if name == 'glucose' %}data-glucose-unit{% endif %}>{{ unit }}</span>
+  </div>
+  {% if spec[-1] %}<p class="hint" id="{{ name }}-hint">{{ spec[-1] }}</p>{% endif %}
+  {{ field_error(errors, name) }}
+</div>
+{% endmacro %}
+
+{% block content %}
+<div class="container app app-narrow">
+  <header class="page-head page-head-center">
+    <div>
+      <h1>New screening</h1>
+      <p class="muted">Four short steps. Lab values are optional; enter only what has been measured.</p>
+    </div>
+  </header>
+
+  {% if errors %}
+  <div class="alert alert-error" role="alert" tabindex="-1" data-autofocus id="error-summary">{{ icon('alert-triangle', 18) }}
+    <div><strong>{{ errors|length }} {{ 'field needs' if errors|length == 1 else 'fields need' }} attention before a prediction can be made:</strong>
+      <ul>{% for name, msg in errors.items() %}<li><a href="#{{ name }}" data-goto="{{ name }}">{{ msg }}</a></li>{% endfor %}</ul></div>
+  </div>
+  {% endif %}
+
+  <form method="post" class="wizard" novalidate data-wizard>
+    {{ csrf() }}
+    <ol class="stepper" aria-label="Progress">
+      {% for title in ['Patient', 'Symptoms', 'Lifestyle', 'Lab values'] %}
+      <li data-step-dot="{{ loop.index0 }}"><span class="dot">{{ loop.index }}</span><span class="dot-label">{{ title }}</span></li>
+      {% endfor %}
+    </ol>
+    <div class="stepper-bar" aria-hidden="true"><i data-step-bar></i></div>
+    <p class="sr-only" aria-live="polite" data-step-status></p>
+
+    <!-- Step 1 -->
+    <fieldset class="step card-form" data-step>
+      <legend><span class="step-kicker">Step 1 of 4</span>Patient and vital signs</legend>
+      <div class="field {{ 'has-error' if errors.patient_ref }}">
+        <label for="patient_ref">Patient card or folder number</label>
+        <input id="patient_ref" name="patient_ref" value="{{ form.get('patient_ref', '') }}" required maxlength="20" pattern="[A-Za-z0-9][A-Za-z0-9\/\-]{1,19}" autocomplete="off" autocapitalize="characters" placeholder="e.g. PHC/0412" aria-describedby="patient_ref-hint" data-label="Patient reference" data-msg="Enter the card or folder number: 2 to 20 letters, digits, hyphens or slashes.">
+        <p class="hint" id="patient_ref-hint">Use the facility number, not the patient's name. This keeps the record private.</p>
+        {{ field_error(errors, 'patient_ref') }}
+      </div>
+      <div class="field-row">
+        {{ number('age', S.CORE_NUMERIC.age) }}
+        <div class="field {{ 'has-error' if errors.sex }}">
+          <span class="label" id="sex-label">Sex</span>
+          <div class="segmented" role="radiogroup" aria-labelledby="sex-label" id="sex">
+            {% for opt in S.SEX_OPTIONS %}
+            <label><input type="radio" name="sex" value="{{ opt }}" {{ 'checked' if form.get('sex') == opt }} required data-label="Sex"><span>{{ opt }}</span></label>
+            {% endfor %}
+          </div>
+          {{ field_error(errors, 'sex') }}
+        </div>
+      </div>
+      <div class="field-row field-row-3">
+        {{ number('weight_kg', S.CORE_NUMERIC.weight_kg) }}
+        {{ number('height_cm', S.CORE_NUMERIC.height_cm) }}
+        <div class="field">
+          <span class="label">Body mass index</span>
+          <output class="bmi" data-bmi for="weight_kg height_cm" aria-live="polite"><b>--</b><span>Enter weight and height</span></output>
+        </div>
+      </div>
+      <div class="field-row">
+        {{ number('systolic_bp', S.CORE_NUMERIC.systolic_bp) }}
+        {{ number('diastolic_bp', S.CORE_NUMERIC.diastolic_bp) }}
+      </div>
+    </fieldset>
+
+    <!-- Step 2 -->
+    <fieldset class="step card-form" data-step>
+      <legend><span class="step-kicker">Step 2 of 4</span>Symptoms the patient reports</legend>
+      <p class="muted step-intro">Tick every symptom that applies. Leave the rest blank.</p>
+      {% for group, names in S.SYMPTOM_GROUPS %}
+      <div class="sym-group">
+        <h3>{{ group }}</h3>
+        <div class="sym-grid">
+          {% for name in names %}
+          <label class="sym {{ 'has-error' if errors.get(name) }}" for="{{ name }}">
+            <input type="checkbox" id="{{ name }}" name="{{ name }}" value="1" {{ 'checked' if form.get(name) }} {% if name in ['weight_gain', 'weight_loss'] %}data-exclusive="weight"{% elif name in ['cold_intolerance', 'heat_intolerance'] %}data-exclusive="temp"{% endif %}>
+            <span class="sym-box" aria-hidden="true">{{ icon('check', 14) }}</span>
+            <span class="sym-text"><b>{{ S.SYMPTOMS[name][0] }}</b><small>{{ S.SYMPTOMS[name][1] }}</small></span>
+          </label>
+          {% endfor %}
+        </div>
+        {% for name in names %}{{ field_error(errors, name) }}{% endfor %}
+      </div>
+      {% endfor %}
+      <div class="field {{ 'has-error' if errors.menstrual_pattern }}" data-female-only>
+        <span class="label" id="mp-label">Menstrual pattern</span>
+        <div class="option-cards" role="radiogroup" aria-labelledby="mp-label" id="menstrual_pattern">
+          {% for opt in S.MENSTRUAL_OPTIONS %}
+          <label><input type="radio" name="menstrual_pattern" value="{{ opt }}" {{ 'checked' if form.get('menstrual_pattern') == opt }} data-label="Menstrual pattern"><span><b>{{ opt }}</b><small>{{ S.MENSTRUAL_HELP[opt] }}</small></span></label>
+          {% endfor %}
+        </div>
+        {{ field_error(errors, 'menstrual_pattern') }}
+      </div>
+    </fieldset>
+
+    <!-- Step 3 -->
+    <fieldset class="step card-form" data-step>
+      <legend><span class="step-kicker">Step 3 of 4</span>Lifestyle and family history</legend>
+      {{ number('sleep_hours', S.CORE_NUMERIC.sleep_hours) }}
+      <div class="field {{ 'has-error' if errors.exercise_level }}">
+        <span class="label" id="ex-label">Exercise level</span>
+        <div class="option-cards" role="radiogroup" aria-labelledby="ex-label" id="exercise_level">
+          {% for opt in S.EXERCISE_OPTIONS %}
+          <label><input type="radio" name="exercise_level" value="{{ opt }}" {{ 'checked' if form.get('exercise_level') == opt }} required data-label="Exercise level"><span><b>{{ opt }}</b><small>{{ S.EXERCISE_HELP[opt] }}</small></span></label>
+          {% endfor %}
+        </div>
+        {{ field_error(errors, 'exercise_level') }}
+      </div>
+      <label class="sym sym-wide" for="family_history">
+        <input type="checkbox" id="family_history" name="family_history" value="1" {{ 'checked' if form.get('family_history') }}>
+        <span class="sym-box" aria-hidden="true">{{ icon('check', 14) }}</span>
+        <span class="sym-text"><b>{{ S.HISTORY_FLAGS.family_history[0] }}</b><small>{{ S.HISTORY_FLAGS.family_history[1] }}</small></span>
+      </label>
+    </fieldset>
+
+    <!-- Step 4 -->
+    <fieldset class="step card-form" data-step>
+      <legend><span class="step-kicker">Step 4 of 4</span>Laboratory values <span class="optional">all optional</span></legend>
+      <div class="alert alert-info">{{ icon('info', 18) }}<span>No laboratory? Skip this step. The model still works on symptoms and vital signs, though each result you add makes it more reliable.</span></div>
+      {% for panel, names in S.LAB_PANELS %}
+      <div class="lab-panel">
+        <h3>{{ panel }}</h3>
+        <div class="field-row {{ 'field-row-3' if names|length == 3 }}">
+          {% for name in names %}
+            {{ number(name, S.LABS[name], required=false) }}
+          {% endfor %}
+          {% if 'glucose' in names %}
+          <div class="field field-unit-toggle">
+            <span class="label" id="gu-label">Glucose unit</span>
+            <div class="segmented segmented-sm" role="radiogroup" aria-labelledby="gu-label">
+              {% for u in ['mg/dL', 'mmol/L'] %}
+              <label><input type="radio" name="glucose_unit" value="{{ u }}" {{ 'checked' if form.get('glucose_unit', 'mg/dL') == u }}><span>{{ u }}</span></label>
+              {% endfor %}
+            </div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+      <div class="field consent {{ 'has-error' if errors.consent }}">
+        <label class="check" for="consent">
+          <input id="consent" name="consent" type="checkbox" value="1" required {{ 'checked' if form.get('consent') }} data-label="Consent" data-msg="Confirm that the patient has given verbal consent for this screening.">
+          <span>The patient has been told what this screening is for and has given verbal consent.</span>
+        </label>
+        {{ field_error(errors, 'consent') }}
+      </div>
+    </fieldset>
+
+    <div class="wizard-nav">
+      <button class="btn btn-ghost" type="button" data-prev hidden>{{ icon('arrow-left', 18) }}Back</button>
+      <span class="wizard-count" data-step-count aria-hidden="true"></span>
+      <button class="btn btn-primary" type="button" data-next>Continue{{ icon('arrow-right', 18) }}</button>
+      <button class="btn btn-primary shimmer" type="submit" data-submit data-loading-text="Analysing">{{ icon('activity', 18) }}Get prediction</button>
+    </div>
+  </form>
+</div>
+{% endblock %}

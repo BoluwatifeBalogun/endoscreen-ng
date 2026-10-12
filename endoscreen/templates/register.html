@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import icon, logo, csrf, field_error with context %}
+{% block title %}Create account{% endblock %}
+{% block body_class %}page-auth{% endblock %}
+{% block nav %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block content %}
+<div class="auth">
+  <aside class="auth-side">
+    <div class="aurora aurora-dark" aria-hidden="true"><i></i><i></i></div>
+    <a class="brand brand-light" href="{{ url_for('main.landing') }}">{{ logo(34) }}<span>EndoScreen <b>NG</b></span></a>
+    <div class="auth-side-body">
+      <h2>Join health workers screening smarter across Nigeria.</h2>
+      <ul>
+        <li>{{ icon('clipboard', 18) }}Guided form, no free text</li>
+        <li>{{ icon('clock', 18) }}Every screening saved to your history</li>
+        <li>{{ icon('file-text', 18) }}Printable referral advice</li>
+      </ul>
+    </div>
+    <p class="auth-side-foot">Screening aid for health workers. Not a diagnosis.</p>
+  </aside>
+  <section class="auth-main">
+    <div class="auth-card auth-card-wide">
+      <a class="back-link" href="{{ url_for('main.landing') }}">{{ icon('arrow-left', 16) }}Back to home</a>
+      <h1>Create your account</h1>
+      <p class="muted">It takes about a minute. All fields are required.</p>
+      {% if errors %}
+      <div class="alert alert-error" role="alert" tabindex="-1" data-autofocus>{{ icon('alert-triangle', 18) }}
+        <div><strong>Please fix {{ errors|length }} {{ 'field' if errors|length == 1 else 'fields' }}:</strong>
+          <ul>{% for name, msg in errors.items() %}<li><a href="#{{ name }}">{{ msg }}</a></li>{% endfor %}</ul></div>
+      </div>
+      {% endif %}
+      <form method="post" novalidate data-validate>
+        {{ csrf() }}
+        <div class="field {{ 'has-error' if errors.name }}">
+          <label for="name">Full name</label>
+          <input id="name" name="name" value="{{ form.name }}" autocomplete="name" required minlength="3" data-msg="Enter your full name.">
+          {{ field_error(errors, 'name') }}
+        </div>
+        <div class="field {{ 'has-error' if errors.email }}">
+          <label for="email">Email address</label>
+          <input id="email" name="email" type="email" value="{{ form.email }}" autocomplete="email" inputmode="email" required data-msg="Enter a valid email address, for example name@clinic.ng.">
+          {{ field_error(errors, 'email') }}
+        </div>
+        <div class="field-row">
+          <div class="field {{ 'has-error' if errors.cadre }}">
+            <label for="cadre">Professional cadre</label>
+            <select id="cadre" name="cadre" required data-msg="Choose your professional cadre.">
+              <option value="">Select cadre</option>
+              {% for c in S.CADRES %}<option {{ 'selected' if form.cadre == c }}>{{ c }}</option>{% endfor %}
+            </select>
+            {{ field_error(errors, 'cadre') }}
+          </div>
+          <div class="field {{ 'has-error' if errors.state }}">
+            <label for="state">State</label>
+            <select id="state" name="state" required autocomplete="address-level1" data-msg="Choose the state where your facility is located.">
+              <option value="">Select state</option>
+              {% for zone, states in S.NIGERIAN_STATES.items() %}
+              <optgroup label="{{ zone }}">{% for s in states %}<option {{ 'selected' if form.state == s }}>{{ s }}</option>{% endfor %}</optgroup>
+              {% endfor %}
+            </select>
+            {{ field_error(errors, 'state') }}
+          </div>
+        </div>
+        <div class="field {{ 'has-error' if errors.facility }}">
+          <label for="facility">Health facility</label>
+          <input id="facility" name="facility" value="{{ form.facility }}" autocomplete="organization" required minlength="3" placeholder="e.g. Iwaya Primary Health Centre" data-msg="Enter the name of your health facility.">
+          {{ field_error(errors, 'facility') }}
+        </div>
+        <div class="field-row">
+          <div class="field {{ 'has-error' if errors.password }}">
+            <label for="password">Password</label>
+            <div class="input-wrap">
+              <input id="password" name="password" type="password" autocomplete="new-password" required minlength="8" aria-describedby="password-hint" data-msg="Use at least 8 characters with a letter and a number.">
+              <button type="button" class="input-action" data-toggle-password="password" aria-label="Show password" aria-pressed="false">{{ icon('eye', 18) }}</button>
+            </div>
+            <p class="hint" id="password-hint">At least 8 characters, with a letter and a number.</p>
+            {{ field_error(errors, 'password') }}
+          </div>
+          <div class="field {{ 'has-error' if errors.confirm }}">
+            <label for="confirm">Confirm password</label>
+            <input id="confirm" name="confirm" type="password" autocomplete="new-password" required data-match="password" data-msg="The two passwords do not match.">
+            {{ field_error(errors, 'confirm') }}
+          </div>
+        </div>
+        <div class="field {{ 'has-error' if errors.terms }}">
+          <label class="check" for="terms">
+            <input id="terms" name="terms" type="checkbox" value="1" required data-msg="Confirm that you will use the system as a screening aid only.">
+            <span>I understand that EndoScreen NG is a screening aid and does not replace clinical diagnosis.</span>
+          </label>
+          {{ field_error(errors, 'terms') }}
+        </div>
+        <button class="btn btn-primary btn-block btn-lg" type="submit" data-loading-text="Creating account">Create account</button>
+      </form>
+      <p class="auth-alt">Already registered? <a href="{{ url_for('main.login') }}">Sign in</a></p>
+    </div>
+  </section>
+</div>
+{% endblock %}

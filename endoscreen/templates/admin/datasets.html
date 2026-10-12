@@ -1,0 +1,53 @@
+{% extends "admin/layout.html" %}
+{% from "partials/macros.html" import icon, csrf, confirm_form with context %}
+{% block title %}Datasets{% endblock %}
+{% block admin %}
+<header class="page-head">
+  <div><h1>Datasets</h1><p class="muted">Upload a hormonal health dataset and retrain the three algorithms on it.</p></div>
+  <a class="btn btn-ghost" href="{{ url_for('admin.dataset_template') }}">{{ icon('download', 18) }}CSV template</a>
+</header>
+
+<section class="card">
+  <h2 class="card-title">{{ icon('upload', 18) }}Upload a dataset</h2>
+  <form method="post" action="{{ url_for('admin.upload_dataset') }}" enctype="multipart/form-data" class="upload-form">
+    {{ csrf() }}
+    <div class="field"><label for="name">Dataset name</label><input id="name" name="name" required maxlength="160" placeholder="e.g. LUTH endocrine clinic 2026"></div>
+    <div class="field"><label for="source">Source and ethical clearance <span class="optional">optional</span></label><input id="source" name="source" maxlength="255" placeholder="e.g. HREC/2026/014, anonymised"></div>
+    <div class="field"><label for="file">CSV file</label><input id="file" name="file" type="file" accept=".csv,text/csv" required aria-describedby="file-hint">
+      <p class="hint" id="file-hint">Up to 8 MB. Columns must match the template: {{ S.DATASET_COLUMNS|length }} columns, with the class in <code>diagnosis</code>. Each class needs at least 20 records. Remove names and other identifiers first.</p></div>
+    <button class="btn btn-primary" type="submit" data-loading-text="Checking file">{{ icon('upload', 18) }}Upload and validate</button>
+  </form>
+</section>
+
+<section class="panel" data-poll="{{ url_for('admin.dataset_status') }}">
+  <div class="panel-head"><h2>Registered datasets</h2></div>
+  {% if rows %}
+  <div class="table-wrap">
+    <table class="table table-stack">
+      <caption class="sr-only">Datasets</caption>
+      <thead><tr><th scope="col">Dataset</th><th scope="col" class="num">Records</th><th scope="col">Classes</th><th scope="col">Status</th><th scope="col">Train</th><th scope="col"><span class="sr-only">Delete</span></th></tr></thead>
+      <tbody>
+        {% for d in rows %}
+        <tr data-dataset="{{ d.dataset_id }}" data-status="{{ d.status }}">
+          <td data-label="Dataset"><b>{{ d.name }}</b><br><small>{{ d.source }} · {{ d.uploaded_at|naira_date(false) }}</small></td>
+          <td data-label="Records" class="num">{{ d.n_records }}</td>
+          <td data-label="Classes"><small>{% for c, n in d.distribution.items() %}{{ S.CLASS_SHORT.get(c, c) }} {{ n }}{{ ', ' if not loop.last }}{% endfor %}</small></td>
+          <td data-label="Status"><span class="status status-{{ {'trained': 'ok', 'failed': 'warn', 'training': 'busy'}.get(d.status, 'muted') }}" data-status-pill>{{ d.status|capitalize }}</span><br><small data-status-msg>{{ d.status_message }}</small></td>
+          <td data-label="Train">
+            <form method="post" action="{{ url_for('admin.train_dataset', dataset_id=d.dataset_id) }}" class="train-form">{{ csrf() }}
+              <label class="check check-sm"><input type="checkbox" name="fast" value="1"><span>Quick mode</span></label>
+              <button class="btn btn-ghost btn-sm" type="submit" {{ 'disabled' if d.status == 'training' }}>{{ icon('refresh', 16) }}{{ 'Retrain' if d.status == 'trained' else 'Train' }}</button>
+            </form>
+          </td>
+          <td class="actions">{{ confirm_form(url_for('admin.delete_dataset', dataset_id=d.dataset_id), 'Delete this dataset?', d.name ~ ' will be removed from the server.', 'Delete dataset', 'Delete dataset ' ~ d.name) }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="table-foot">Training fits Logistic Regression, Random Forest and SVM with cross-validated tuning, then registers a new model version. Quick mode uses smaller search grids for low-memory servers. New versions are not activated automatically; do that under Models.</p>
+  {% else %}
+  <div class="empty">{{ icon('database', 28) }}<h3>No datasets yet</h3><p>Download the CSV template, fill it with anonymised records and upload it here.</p></div>
+  {% endif %}
+</section>
+{% endblock %}

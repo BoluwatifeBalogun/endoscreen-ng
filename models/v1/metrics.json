@@ -1,0 +1,1414 @@
+{
+ "version": "v1",
+ "trained_at": "2026-10-10T14:30:30+00:00",
+ "sklearn_version": "1.9.1",
+ "dataset": {
+  "file": "hormonal_health_dataset.csv",
+  "cleaning": {
+   "rows_raw": 3040,
+   "duplicates_removed": 40,
+   "unknown_labels_removed": 0,
+   "out_of_range_values_blanked": 18,
+   "rows_dropped_missing_essentials": 12,
+   "rows_clean": 2988,
+   "missing_by_column": {
+    "systolic_bp": 6,
+    "diastolic_bp": 20,
+    "sleep_hours": 45,
+    "glucose": 753,
+    "tsh": 1335,
+    "t3": 1459,
+    "t4": 1335,
+    "lh": 1816,
+    "fsh": 1816,
+    "cortisol": 1833,
+    "insulin": 1982
+   },
+   "class_distribution": {
+    "No hormonal imbalance": 1082,
+    "Hypothyroidism": 434,
+    "Hyperthyroidism": 275,
+    "Polycystic ovary syndrome (PCOS)": 471,
+    "Diabetes mellitus": 525,
+    "Adrenal insufficiency": 201
+   }
+  },
+  "n_train": 2390,
+  "n_test": 598,
+  "n_features": 46,
+  "split": "80:20 stratified"
+ },
+ "classes": [
+  "No hormonal imbalance",
+  "Hypothyroidism",
+  "Hyperthyroidism",
+  "Polycystic ovary syndrome (PCOS)",
+  "Diabetes mellitus",
+  "Adrenal insufficiency"
+ ],
+ "features": [
+  "age",
+  "is_female",
+  "bmi",
+  "weight_kg",
+  "systolic_bp",
+  "diastolic_bp",
+  "sleep_hours",
+  "exercise_level",
+  "menses_irregular",
+  "menses_absent",
+  "fatigue",
+  "weight_gain",
+  "weight_loss",
+  "acne",
+  "hair_loss",
+  "excess_hair",
+  "mood_swings",
+  "depression",
+  "sleep_problems",
+  "infertility",
+  "cold_intolerance",
+  "heat_intolerance",
+  "excessive_thirst",
+  "frequent_urination",
+  "palpitations",
+  "dizziness",
+  "skin_darkening",
+  "salt_craving",
+  "family_history",
+  "glucose",
+  "tsh_log",
+  "t3",
+  "t4",
+  "lh",
+  "fsh",
+  "lh_fsh_ratio",
+  "cortisol",
+  "insulin_log",
+  "glucose_missing",
+  "tsh_missing",
+  "t3_missing",
+  "t4_missing",
+  "lh_missing",
+  "fsh_missing",
+  "cortisol_missing",
+  "insulin_missing"
+ ],
+ "models": {
+  "logistic_regression": {
+   "name": "Logistic Regression",
+   "best_params": {
+    "clf__C": 0.1,
+    "select__k": "all"
+   },
+   "cv": {
+    "accuracy": {
+     "mean": 0.9179916317991633,
+     "std": 0.016861457472476898
+    },
+    "precision": {
+     "mean": 0.9054322389737386,
+     "std": 0.018576049970632547
+    },
+    "recall": {
+     "mean": 0.9181330748976381,
+     "std": 0.013881822599789189
+    },
+    "f1": {
+     "mean": 0.9098676921168838,
+     "std": 0.016101936292397277
+    },
+    "auc_roc": {
+     "mean": 0.9738428497935694,
+     "std": 0.008390217764977037
+    }
+   },
+   "test": {
+    "accuracy": 0.9113712374581939,
+    "precision": 0.8953068178432897,
+    "recall": 0.9214417116279113,
+    "f1": 0.9065165647038018,
+    "auc_roc": 0.9770919141536304,
+    "confusion_matrix": [
+     [
+      193,
+      10,
+      2,
+      3,
+      3,
+      6
+     ],
+     [
+      1,
+      79,
+      2,
+      3,
+      1,
+      1
+     ],
+     [
+      2,
+      1,
+      50,
+      1,
+      0,
+      1
+     ],
+     [
+      4,
+      5,
+      0,
+      85,
+      0,
+      0
+     ],
+     [
+      2,
+      2,
+      1,
+      0,
+      99,
+      1
+     ],
+     [
+      1,
+      0,
+      0,
+      0,
+      0,
+      39
+     ]
+    ],
+    "per_class": [
+     {
+      "label": "No hormonal imbalance",
+      "precision": 0.9507389162561576,
+      "recall": 0.8894009216589862,
+      "f1": 0.919047619047619,
+      "support": 217
+     },
+     {
+      "label": "Hypothyroidism",
+      "precision": 0.8144329896907216,
+      "recall": 0.9080459770114943,
+      "f1": 0.8586956521739131,
+      "support": 87
+     },
+     {
+      "label": "Hyperthyroidism",
+      "precision": 0.9090909090909091,
+      "recall": 0.9090909090909091,
+      "f1": 0.9090909090909091,
+      "support": 55
+     },
+     {
+      "label": "Polycystic ovary syndrome (PCOS)",
+      "precision": 0.9239130434782609,
+      "recall": 0.9042553191489362,
+      "f1": 0.9139784946236559,
+      "support": 94
+     },
+     {
+      "label": "Diabetes mellitus",
+      "precision": 0.9611650485436893,
+      "recall": 0.9428571428571428,
+      "f1": 0.9519230769230769,
+      "support": 105
+     },
+     {
+      "label": "Adrenal insufficiency",
+      "precision": 0.8125,
+      "recall": 0.975,
+      "f1": 0.8863636363636364,
+      "support": 40
+     }
+    ],
+    "screening": {
+     "auc": 0.9845301595365096,
+     "sensitivity": 0.984251968503937,
+     "specificity": 0.8433179723502304,
+     "high_band_ppv": 0.967741935483871,
+     "low_band_npv": 0.9682539682539683,
+     "roc": {
+      "fpr": [
+       0.0,
+       0.0,
+       0.0,
+       0.0046,
+       0.0046,
+       0.0092,
+       0.0092,
+       0.0138,
+       0.0138,
+       0.0184,
+       0.0184,
+       0.023,
+       0.023,
+       0.0461,
+       0.0461,
+       0.0553,
+       0.0553,
+       0.0599,
+       0.0599,
+       0.0645,
+       0.0645,
+       0.0691,
+       0.0691,
+       0.0737,
+       0.0737,
+       0.0829,
+       0.0829,
+       0.0922,
+       0.0922,
+       0.1106,
+       0.1106,
+       0.1336,
+       0.1336,
+       0.1429,
+       0.1429,
+       0.1567,
+       0.1567,
+       0.1797,
+       0.1797,
+       0.1935,
+       0.1935,
+       0.2028,
+       0.2028,
+       0.2765,
+       0.2765,
+       0.8433,
+       0.8433,
+       1.0
+      ],
+      "tpr": [
+       0.0,
+       0.0026,
+       0.4856,
+       0.4856,
+       0.643,
+       0.643,
+       0.685,
+       0.685,
+       0.7165,
+       0.7165,
+       0.79,
+       0.79,
+       0.9396,
+       0.9396,
+       0.9449,
+       0.9449,
+       0.9475,
+       0.9475,
+       0.9501,
+       0.9501,
+       0.9528,
+       0.9528,
+       0.9554,
+       0.9554,
+       0.958,
+       0.958,
+       0.9606,
+       0.9606,
+       0.9659,
+       0.9659,
+       0.9711,
+       0.9711,
+       0.9738,
+       0.9738,
+       0.9816,
+       0.9816,
+       0.9869,
+       0.9869,
+       0.9895,
+       0.9895,
+       0.9921,
+       0.9921,
+       0.9948,
+       0.9948,
+       0.9974,
+       0.9974,
+       1.0,
+       1.0
+      ]
+     }
+    }
+   },
+   "risk_thresholds": {
+    "moderate": 0.5,
+    "high": 0.71
+   },
+   "test_without_labs": {
+    "accuracy": 0.8712374581939799,
+    "precision": 0.8515121268059392,
+    "recall": 0.8783979536926075,
+    "f1": 0.8635387980286028,
+    "auc_roc": 0.9727218097984139,
+    "screening": {
+     "auc": 0.9752168075764722,
+     "sensitivity": 0.9763779527559056,
+     "specificity": 0.8018433179723502
+    }
+   },
+   "n_features_selected": 46,
+   "selected_features": [
+    "age",
+    "is_female",
+    "bmi",
+    "weight_kg",
+    "systolic_bp",
+    "diastolic_bp",
+    "sleep_hours",
+    "exercise_level",
+    "menses_irregular",
+    "menses_absent",
+    "fatigue",
+    "weight_gain",
+    "weight_loss",
+    "acne",
+    "hair_loss",
+    "excess_hair",
+    "mood_swings",
+    "depression",
+    "sleep_problems",
+    "infertility",
+    "cold_intolerance",
+    "heat_intolerance",
+    "excessive_thirst",
+    "frequent_urination",
+    "palpitations",
+    "dizziness",
+    "skin_darkening",
+    "salt_craving",
+    "family_history",
+    "glucose",
+    "tsh_log",
+    "t3",
+    "t4",
+    "lh",
+    "fsh",
+    "lh_fsh_ratio",
+    "cortisol",
+    "insulin_log",
+    "glucose_missing",
+    "tsh_missing",
+    "t3_missing",
+    "t4_missing",
+    "lh_missing",
+    "fsh_missing",
+    "cortisol_missing",
+    "insulin_missing"
+   ],
+   "file": "logistic_regression.joblib",
+   "train_seconds": 2.2
+  },
+  "random_forest": {
+   "name": "Random Forest",
+   "best_params": {
+    "clf__max_depth": 14,
+    "clf__min_samples_leaf": 3,
+    "clf__n_estimators": 300,
+    "select__k": "all"
+   },
+   "cv": {
+    "accuracy": {
+     "mean": 0.9209205020920501,
+     "std": 0.01114102674116683
+    },
+    "precision": {
+     "mean": 0.9261521514441753,
+     "std": 0.00883223306445102
+    },
+    "recall": {
+     "mean": 0.9103583649827793,
+     "std": 0.007668623207495082
+    },
+    "f1": {
+     "mean": 0.9170415870466118,
+     "std": 0.007357798897390222
+    },
+    "auc_roc": {
+     "mean": 0.9736179728352805,
+     "std": 0.007228846516617395
+    }
+   },
+   "test": {
+    "accuracy": 0.9247491638795987,
+    "precision": 0.9238018178115671,
+    "recall": 0.9224160786895977,
+    "f1": 0.9224951341419098,
+    "auc_roc": 0.981028739001003,
+    "confusion_matrix": [
+     [
+      202,
+      5,
+      0,
+      4,
+      3,
+      3
+     ],
+     [
+      4,
+      78,
+      1,
+      2,
+      1,
+      1
+     ],
+     [
+      3,
+      1,
+      49,
+      1,
+      0,
+      1
+     ],
+     [
+      5,
+      4,
+      0,
+      85,
+      0,
+      0
+     ],
+     [
+      2,
+      2,
+      0,
+      0,
+      101,
+      0
+     ],
+     [
+      2,
+      0,
+      0,
+      0,
+      0,
+      38
+     ]
+    ],
+    "per_class": [
+     {
+      "label": "No hormonal imbalance",
+      "precision": 0.926605504587156,
+      "recall": 0.9308755760368663,
+      "f1": 0.9287356321839081,
+      "support": 217
+     },
+     {
+      "label": "Hypothyroidism",
+      "precision": 0.8666666666666667,
+      "recall": 0.896551724137931,
+      "f1": 0.8813559322033898,
+      "support": 87
+     },
+     {
+      "label": "Hyperthyroidism",
+      "precision": 0.98,
+      "recall": 0.8909090909090909,
+      "f1": 0.9333333333333333,
+      "support": 55
+     },
+     {
+      "label": "Polycystic ovary syndrome (PCOS)",
+      "precision": 0.9239130434782609,
+      "recall": 0.9042553191489362,
+      "f1": 0.9139784946236559,
+      "support": 94
+     },
+     {
+      "label": "Diabetes mellitus",
+      "precision": 0.9619047619047619,
+      "recall": 0.9619047619047619,
+      "f1": 0.9619047619047619,
+      "support": 105
+     },
+     {
+      "label": "Adrenal insufficiency",
+      "precision": 0.8837209302325582,
+      "recall": 0.95,
+      "f1": 0.9156626506024096,
+      "support": 40
+     }
+    ],
+    "screening": {
+     "auc": 0.9829819659639318,
+     "sensitivity": 0.984251968503937,
+     "specificity": 0.7926267281105991,
+     "high_band_ppv": 0.9653333333333334,
+     "low_band_npv": 0.9662921348314607,
+     "roc": {
+      "fpr": [
+       0.0,
+       0.0,
+       0.0,
+       0.0046,
+       0.0046,
+       0.0092,
+       0.0092,
+       0.0138,
+       0.0138,
+       0.0184,
+       0.0184,
+       0.023,
+       0.023,
+       0.0276,
+       0.0276,
+       0.0323,
+       0.0323,
+       0.0369,
+       0.0369,
+       0.0415,
+       0.0415,
+       0.0507,
+       0.0507,
+       0.0553,
+       0.0553,
+       0.0599,
+       0.0599,
+       0.0645,
+       0.0645,
+       0.0737,
+       0.0737,
+       0.0829,
+       0.0829,
+       0.1152,
+       0.1152,
+       0.129,
+       0.129,
+       0.1382,
+       0.1382,
+       0.1613,
+       0.1613,
+       0.1751,
+       0.1751,
+       0.1889,
+       0.1889,
+       0.2074,
+       0.2074,
+       0.2442,
+       0.2442,
+       0.3963,
+       0.3963,
+       0.4194,
+       0.4194,
+       0.8433,
+       0.8433,
+       1.0
+      ],
+      "tpr": [
+       0.0,
+       0.0026,
+       0.336,
+       0.336,
+       0.6903,
+       0.6903,
+       0.7769,
+       0.7769,
+       0.832,
+       0.832,
+       0.8635,
+       0.8635,
+       0.8924,
+       0.8924,
+       0.895,
+       0.895,
+       0.9265,
+       0.9265,
+       0.937,
+       0.937,
+       0.9396,
+       0.9396,
+       0.9475,
+       0.9475,
+       0.9501,
+       0.9501,
+       0.9554,
+       0.9554,
+       0.958,
+       0.958,
+       0.9633,
+       0.9633,
+       0.9659,
+       0.9659,
+       0.9685,
+       0.9685,
+       0.9738,
+       0.9738,
+       0.9764,
+       0.9764,
+       0.979,
+       0.979,
+       0.9816,
+       0.9816,
+       0.9843,
+       0.9843,
+       0.9869,
+       0.9869,
+       0.9895,
+       0.9895,
+       0.9921,
+       0.9921,
+       0.9974,
+       0.9974,
+       1.0,
+       1.0
+      ]
+     }
+    }
+   },
+   "risk_thresholds": {
+    "moderate": 0.5,
+    "high": 0.66
+   },
+   "test_without_labs": {
+    "accuracy": 0.8695652173913043,
+    "precision": 0.8795553292597487,
+    "recall": 0.8618609003368665,
+    "f1": 0.8688443280834046,
+    "auc_roc": 0.9726743827419293,
+    "screening": {
+     "auc": 0.9688426043518752,
+     "sensitivity": 0.979002624671916,
+     "specificity": 0.7511520737327189
+    }
+   },
+   "n_features_selected": 46,
+   "selected_features": [
+    "age",
+    "is_female",
+    "bmi",
+    "weight_kg",
+    "systolic_bp",
+    "diastolic_bp",
+    "sleep_hours",
+    "exercise_level",
+    "menses_irregular",
+    "menses_absent",
+    "fatigue",
+    "weight_gain",
+    "weight_loss",
+    "acne",
+    "hair_loss",
+    "excess_hair",
+    "mood_swings",
+    "depression",
+    "sleep_problems",
+    "infertility",
+    "cold_intolerance",
+    "heat_intolerance",
+    "excessive_thirst",
+    "frequent_urination",
+    "palpitations",
+    "dizziness",
+    "skin_darkening",
+    "salt_craving",
+    "family_history",
+    "glucose",
+    "tsh_log",
+    "t3",
+    "t4",
+    "lh",
+    "fsh",
+    "lh_fsh_ratio",
+    "cortisol",
+    "insulin_log",
+    "glucose_missing",
+    "tsh_missing",
+    "t3_missing",
+    "t4_missing",
+    "lh_missing",
+    "fsh_missing",
+    "cortisol_missing",
+    "insulin_missing"
+   ],
+   "file": "random_forest.joblib",
+   "train_seconds": 32.6
+  },
+  "svm": {
+   "name": "Support Vector Machine",
+   "best_params": {
+    "clf__C": 1,
+    "clf__gamma": "scale",
+    "select__k": "all"
+   },
+   "cv": {
+    "accuracy": {
+     "mean": 0.9309623430962344,
+     "std": 0.014763413191947563
+    },
+    "precision": {
+     "mean": 0.9336921087814488,
+     "std": 0.012377111909439253
+    },
+    "recall": {
+     "mean": 0.9203690705711157,
+     "std": 0.016785337277714005
+    },
+    "f1": {
+     "mean": 0.9256402287876966,
+     "std": 0.014055385930839617
+    },
+    "auc_roc": {
+     "mean": 0.971986579949544,
+     "std": 0.009689963780536706
+    }
+   },
+   "test": {
+    "accuracy": 0.9163879598662207,
+    "precision": 0.9161644609025804,
+    "recall": 0.9049800902991801,
+    "f1": 0.9101750263994001,
+    "auc_roc": 0.9822811136071447,
+    "confusion_matrix": [
+     [
+      203,
+      6,
+      0,
+      2,
+      2,
+      4
+     ],
+     [
+      7,
+      74,
+      1,
+      3,
+      1,
+      1
+     ],
+     [
+      3,
+      2,
+      49,
+      1,
+      0,
+      0
+     ],
+     [
+      3,
+      4,
+      0,
+      87,
+      0,
+      0
+     ],
+     [
+      2,
+      2,
+      0,
+      1,
+      100,
+      0
+     ],
+     [
+      4,
+      0,
+      0,
+      1,
+      0,
+      35
+     ]
+    ],
+    "per_class": [
+     {
+      "label": "No hormonal imbalance",
+      "precision": 0.9144144144144144,
+      "recall": 0.9354838709677419,
+      "f1": 0.9248291571753986,
+      "support": 217
+     },
+     {
+      "label": "Hypothyroidism",
+      "precision": 0.8409090909090909,
+      "recall": 0.8505747126436781,
+      "f1": 0.8457142857142858,
+      "support": 87
+     },
+     {
+      "label": "Hyperthyroidism",
+      "precision": 0.98,
+      "recall": 0.8909090909090909,
+      "f1": 0.9333333333333333,
+      "support": 55
+     },
+     {
+      "label": "Polycystic ovary syndrome (PCOS)",
+      "precision": 0.9157894736842105,
+      "recall": 0.925531914893617,
+      "f1": 0.9206349206349206,
+      "support": 94
+     },
+     {
+      "label": "Diabetes mellitus",
+      "precision": 0.970873786407767,
+      "recall": 0.9523809523809523,
+      "f1": 0.9615384615384616,
+      "support": 105
+     },
+     {
+      "label": "Adrenal insufficiency",
+      "precision": 0.875,
+      "recall": 0.875,
+      "f1": 0.875,
+      "support": 40
+     }
+    ],
+    "screening": {
+     "auc": 0.9881587382222383,
+     "sensitivity": 0.9606299212598425,
+     "specificity": 0.9354838709677419,
+     "high_band_ppv": 0.967741935483871,
+     "low_band_npv": 0.9311926605504587,
+     "roc": {
+      "fpr": [
+       0.0,
+       0.0,
+       0.0,
+       0.0046,
+       0.0046,
+       0.0092,
+       0.0092,
+       0.0138,
+       0.0138,
+       0.0184,
+       0.0184,
+       0.023,
+       0.023,
+       0.0276,
+       0.0276,
+       0.0323,
+       0.0323,
+       0.0369,
+       0.0369,
+       0.0461,
+       0.0461,
+       0.0507,
+       0.0507,
+       0.0553,
+       0.0553,
+       0.0599,
+       0.0599,
+       0.0645,
+       0.0645,
+       0.0691,
+       0.0691,
+       0.0737,
+       0.0737,
+       0.0922,
+       0.0922,
+       0.0968,
+       0.0968,
+       0.1198,
+       0.1198,
+       0.1429,
+       0.1429,
+       0.1613,
+       0.1613,
+       0.1751,
+       0.1751,
+       0.3594,
+       0.3594,
+       0.7327,
+       0.7327,
+       1.0
+      ],
+      "tpr": [
+       0.0,
+       0.0026,
+       0.6483,
+       0.6483,
+       0.6824,
+       0.6824,
+       0.8478,
+       0.8478,
+       0.8661,
+       0.8661,
+       0.874,
+       0.874,
+       0.9029,
+       0.9029,
+       0.9081,
+       0.9081,
+       0.916,
+       0.916,
+       0.9344,
+       0.9344,
+       0.937,
+       0.937,
+       0.9423,
+       0.9423,
+       0.9475,
+       0.9475,
+       0.9528,
+       0.9528,
+       0.9606,
+       0.9606,
+       0.9633,
+       0.9633,
+       0.9659,
+       0.9659,
+       0.9816,
+       0.9816,
+       0.9843,
+       0.9843,
+       0.9869,
+       0.9869,
+       0.9895,
+       0.9895,
+       0.9921,
+       0.9921,
+       0.9948,
+       0.9948,
+       0.9974,
+       0.9974,
+       1.0,
+       1.0
+      ]
+     }
+    }
+   },
+   "risk_thresholds": {
+    "moderate": 0.5,
+    "high": 0.6
+   },
+   "test_without_labs": {
+    "accuracy": 0.8896321070234113,
+    "precision": 0.8943542257617887,
+    "recall": 0.8783563695998907,
+    "f1": 0.8854804733796043,
+    "auc_roc": 0.9760892876597865,
+    "screening": {
+     "auc": 0.9798130072450622,
+     "sensitivity": 0.931758530183727,
+     "specificity": 0.9216589861751152
+    }
+   },
+   "n_features_selected": 46,
+   "selected_features": [
+    "age",
+    "is_female",
+    "bmi",
+    "weight_kg",
+    "systolic_bp",
+    "diastolic_bp",
+    "sleep_hours",
+    "exercise_level",
+    "menses_irregular",
+    "menses_absent",
+    "fatigue",
+    "weight_gain",
+    "weight_loss",
+    "acne",
+    "hair_loss",
+    "excess_hair",
+    "mood_swings",
+    "depression",
+    "sleep_problems",
+    "infertility",
+    "cold_intolerance",
+    "heat_intolerance",
+    "excessive_thirst",
+    "frequent_urination",
+    "palpitations",
+    "dizziness",
+    "skin_darkening",
+    "salt_craving",
+    "family_history",
+    "glucose",
+    "tsh_log",
+    "t3",
+    "t4",
+    "lh",
+    "fsh",
+    "lh_fsh_ratio",
+    "cortisol",
+    "insulin_log",
+    "glucose_missing",
+    "tsh_missing",
+    "t3_missing",
+    "t4_missing",
+    "lh_missing",
+    "fsh_missing",
+    "cortisol_missing",
+    "insulin_missing"
+   ],
+   "file": "svm.joblib",
+   "train_seconds": 14.3
+  }
+ },
+ "best_model": "svm",
+ "selection_rule": "Highest mean macro F1 over 10-fold cross-validation on the training split",
+ "hypothesis_test": {
+  "alpha": 0.05,
+  "folds": 10,
+  "metrics": {
+   "accuracy": {
+    "statistic": 12.461538461538467,
+    "p_value": 0.001967937516170981,
+    "reject_h0": true,
+    "pairwise": [
+     {
+      "a": "logistic_regression",
+      "b": "random_forest",
+      "mean_diff": -0.0029288702928870424,
+      "p_value": 0.41796875,
+      "p_holm": 0.41796875,
+      "significant": false
+     },
+     {
+      "a": "logistic_regression",
+      "b": "svm",
+      "mean_diff": -0.012970711297071124,
+      "p_value": 0.001953125,
+      "p_holm": 0.005859375,
+      "significant": true
+     },
+     {
+      "a": "random_forest",
+      "b": "svm",
+      "mean_diff": -0.010041841004184083,
+      "p_value": 0.044921875,
+      "p_holm": 0.08984375,
+      "significant": false
+     }
+    ]
+   },
+   "precision": {
+    "statistic": 12.800000000000011,
+    "p_value": 0.0016615572731739255,
+    "reject_h0": true,
+    "pairwise": [
+     {
+      "a": "logistic_regression",
+      "b": "random_forest",
+      "mean_diff": -0.02071991247043653,
+      "p_value": 0.01953125,
+      "p_holm": 0.0390625,
+      "significant": true
+     },
+     {
+      "a": "logistic_regression",
+      "b": "svm",
+      "mean_diff": -0.028259869807710124,
+      "p_value": 0.001953125,
+      "p_holm": 0.005859375,
+      "significant": true
+     },
+     {
+      "a": "random_forest",
+      "b": "svm",
+      "mean_diff": -0.007539957337273595,
+      "p_value": 0.130859375,
+      "p_holm": 0.130859375,
+      "significant": false
+     }
+    ]
+   },
+   "recall": {
+    "statistic": 6.200000000000003,
+    "p_value": 0.04504920239355775,
+    "reject_h0": true,
+    "pairwise": [
+     {
+      "a": "logistic_regression",
+      "b": "random_forest",
+      "mean_diff": 0.007774709914858613,
+      "p_value": 0.064453125,
+      "p_holm": 0.193359375,
+      "significant": false
+     },
+     {
+      "a": "logistic_regression",
+      "b": "svm",
+      "mean_diff": -0.0022359956734778084,
+      "p_value": 0.4921875,
+      "p_holm": 0.4921875,
+      "significant": false
+     },
+     {
+      "a": "random_forest",
+      "b": "svm",
+      "mean_diff": -0.010010705588336421,
+      "p_value": 0.083984375,
+      "p_holm": 0.193359375,
+      "significant": false
+     }
+    ]
+   },
+   "f1": {
+    "statistic": 7.800000000000011,
+    "p_value": 0.020241911445804273,
+    "reject_h0": true,
+    "pairwise": [
+     {
+      "a": "logistic_regression",
+      "b": "random_forest",
+      "mean_diff": -0.0071738949297279865,
+      "p_value": 0.375,
+      "p_holm": 0.375,
+      "significant": false
+     },
+     {
+      "a": "logistic_regression",
+      "b": "svm",
+      "mean_diff": -0.015772536670812843,
+      "p_value": 0.00390625,
+      "p_holm": 0.01171875,
+      "significant": true
+     },
+     {
+      "a": "random_forest",
+      "b": "svm",
+      "mean_diff": -0.008598641741084856,
+      "p_value": 0.083984375,
+      "p_holm": 0.16796875,
+      "significant": false
+     }
+    ]
+   },
+   "auc_roc": {
+    "statistic": 1.8000000000000114,
+    "p_value": 0.4065696597405968,
+    "reject_h0": false,
+    "pairwise": [
+     {
+      "a": "logistic_regression",
+      "b": "random_forest",
+      "mean_diff": 0.00022487695828889986,
+      "p_value": 0.76953125,
+      "p_holm": 0.966796875,
+      "significant": false
+     },
+     {
+      "a": "logistic_regression",
+      "b": "svm",
+      "mean_diff": 0.0018562698440255597,
+      "p_value": 0.375,
+      "p_holm": 0.966796875,
+      "significant": false
+     },
+     {
+      "a": "random_forest",
+      "b": "svm",
+      "mean_diff": 0.00163139288573666,
+      "p_value": 0.322265625,
+      "p_holm": 0.966796875,
+      "significant": false
+     }
+    ]
+   }
+  },
+  "reject_h0": true,
+  "rejected_on": [
+   "accuracy",
+   "precision",
+   "recall",
+   "f1"
+  ]
+ },
+ "feature_importance": [
+  {
+   "feature": "glucose",
+   "label": "Fasting blood glucose",
+   "importance": 0.02833432569014177
+  },
+  {
+   "feature": "tsh_log",
+   "label": "TSH",
+   "importance": 0.021020519024541787
+  },
+  {
+   "feature": "cold_intolerance",
+   "label": "Feels cold easily",
+   "importance": 0.018720852343192873
+  },
+  {
+   "feature": "systolic_bp",
+   "label": "Systolic blood pressure",
+   "importance": 0.01800664393606563
+  },
+  {
+   "feature": "fatigue",
+   "label": "Persistent fatigue",
+   "importance": 0.01779280482933869
+  },
+  {
+   "feature": "dizziness",
+   "label": "Dizziness on standing",
+   "importance": 0.017260750702714198
+  },
+  {
+   "feature": "weight_loss",
+   "label": "Unexplained weight loss",
+   "importance": 0.015362361565438631
+  },
+  {
+   "feature": "diastolic_bp",
+   "label": "Diastolic blood pressure",
+   "importance": 0.011459028872016691
+  },
+  {
+   "feature": "frequent_urination",
+   "label": "Frequent urination",
+   "importance": 0.01091391335308764
+  },
+  {
+   "feature": "t3",
+   "label": "Total T3",
+   "importance": 0.01043358882829444
+  },
+  {
+   "feature": "excess_hair",
+   "label": "Excess facial or body hair",
+   "importance": 0.007605563178365429
+  },
+  {
+   "feature": "t4",
+   "label": "Total T4",
+   "importance": 0.007150641493035556
+  },
+  {
+   "feature": "excessive_thirst",
+   "label": "Excessive thirst",
+   "importance": 0.006640236497572435
+  },
+  {
+   "feature": "hair_loss",
+   "label": "Hair thinning or loss",
+   "importance": 0.0064720677833223356
+  },
+  {
+   "feature": "menses_irregular",
+   "label": "Irregular menstruation",
+   "importance": 0.006421191173336213
+  }
+ ],
+ "anova_f_top": [
+  {
+   "feature": "glucose",
+   "label": "Fasting blood glucose",
+   "score": 495.2480315078145
+  },
+  {
+   "feature": "excess_hair",
+   "label": "Excess facial or body hair",
+   "score": 424.09528439926885
+  },
+  {
+   "feature": "frequent_urination",
+   "label": "Frequent urination",
+   "score": 405.15866200710616
+  },
+  {
+   "feature": "excessive_thirst",
+   "label": "Excessive thirst",
+   "score": 335.2396629526943
+  },
+  {
+   "feature": "tsh_log",
+   "label": "TSH",
+   "score": 323.80306934850665
+  },
+  {
+   "feature": "cold_intolerance",
+   "label": "Feels cold easily",
+   "score": 299.95285057853613
+  },
+  {
+   "feature": "heat_intolerance",
+   "label": "Heat intolerance or sweating",
+   "score": 264.79880501788523
+  },
+  {
+   "feature": "t4",
+   "label": "Total T4",
+   "score": 248.59399549145124
+  },
+  {
+   "feature": "menses_irregular",
+   "label": "Irregular menstruation",
+   "score": 235.23747661823003
+  },
+  {
+   "feature": "systolic_bp",
+   "label": "Systolic blood pressure",
+   "score": 231.1206240183879
+  },
+  {
+   "feature": "t3",
+   "label": "Total T3",
+   "score": 209.5732147498532
+  },
+  {
+   "feature": "salt_craving",
+   "label": "Salt craving",
+   "score": 209.55817647855483
+  },
+  {
+   "feature": "palpitations",
+   "label": "Palpitations",
+   "score": 204.08839038231622
+  },
+  {
+   "feature": "age",
+   "label": "Age",
+   "score": 202.31995616367158
+  },
+  {
+   "feature": "dizziness",
+   "label": "Dizziness on standing",
+   "score": 198.07383075168988
+  }
+ ],
+ "reference": {
+  "age": 36.0,
+  "is_female": 1.0,
+  "bmi": 24.56105460038392,
+  "weight_kg": 67.2,
+  "systolic_bp": 120.0,
+  "diastolic_bp": 77.0,
+  "sleep_hours": 7.0,
+  "exercise_level": 1.0,
+  "menses_irregular": 0.0,
+  "menses_absent": 0.0,
+  "fatigue": 0.0,
+  "weight_gain": 0.0,
+  "weight_loss": 0.0,
+  "acne": 0.0,
+  "hair_loss": 0.0,
+  "excess_hair": 0.0,
+  "mood_swings": 0.0,
+  "depression": 0.0,
+  "sleep_problems": 0.0,
+  "infertility": 0.0,
+  "cold_intolerance": 0.0,
+  "heat_intolerance": 0.0,
+  "excessive_thirst": 0.0,
+  "frequent_urination": 0.0,
+  "palpitations": 0.0,
+  "dizziness": 0.0,
+  "skin_darkening": 0.0,
+  "salt_craving": 0.0,
+  "family_history": 0.0,
+  "glucose": 87.6,
+  "tsh_log": 0.9787019919955522,
+  "t3": 124.15,
+  "t4": 8.1,
+  "lh": 5.5,
+  "fsh": 5.9,
+  "lh_fsh_ratio": 0.8648648648648649,
+  "cortisol": 13.45,
+  "insulin_log": 2.2300144001592104,
+  "glucose_missing": 0.0,
+  "tsh_missing": 0.0,
+  "t3_missing": 0.0,
+  "t4_missing": 0.0,
+  "lh_missing": 1.0,
+  "fsh_missing": 1.0,
+  "cortisol_missing": 1.0,
+  "insulin_missing": 1.0
+ },
+ "fast_mode": false,
+ "total_seconds": 60.9
+}

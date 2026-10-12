@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import icon, logo, csrf with context %}
+{% block title %}Sign in{% endblock %}
+{% block body_class %}page-auth{% endblock %}
+{% block nav %}{% endblock %}
+{% block footer %}{% endblock %}
+{% block content %}
+<div class="auth">
+  <aside class="auth-side">
+    <div class="aurora aurora-dark" aria-hidden="true"><i></i><i></i></div>
+    <a class="brand brand-light" href="{{ url_for('main.landing') }}">{{ logo(34) }}<span>EndoScreen <b>NG</b></span></a>
+    <div class="auth-side-body">
+      <h2>Earlier detection starts at the first point of care.</h2>
+      <ul>
+        <li>{{ icon('shield-check', 18) }}Patients recorded by card number only</li>
+        <li>{{ icon('zap', 18) }}Instant risk estimate with reasons</li>
+        <li>{{ icon('flask', 18) }}Works with or without lab results</li>
+      </ul>
+    </div>
+    <p class="auth-side-foot">Screening aid for health workers. Not a diagnosis.</p>
+  </aside>
+  <section class="auth-main">
+    <div class="auth-card">
+      <a class="back-link" href="{{ url_for('main.landing') }}">{{ icon('arrow-left', 16) }}Back to home</a>
+      <h1>Sign in</h1>
+      <p class="muted">Health workers and administrators use the same sign-in.</p>
+      {% if error %}<div class="alert alert-error" role="alert" tabindex="-1" data-autofocus>{{ icon('alert-triangle', 18) }}<span>{{ error }}</span></div>{% endif %}
+      <form method="post" novalidate data-validate>
+        {{ csrf() }}
+        <div class="field">
+          <label for="email">Email address</label>
+          <input id="email" name="email" type="email" value="{{ email }}" autocomplete="username" inputmode="email" required>
+        </div>
+        <div class="field">
+          <label for="password">Password</label>
+          <div class="input-wrap">
+            <input id="password" name="password" type="password" autocomplete="current-password" required>
+            <button type="button" class="input-action" data-toggle-password="password" aria-label="Show password" aria-pressed="false">{{ icon('eye', 18) }}</button>
+          </div>
+        </div>
+        <button class="btn btn-primary btn-block btn-lg" type="submit" data-loading-text="Signing in">Sign in</button>
+      </form>
+      <p class="auth-alt">New to EndoScreen NG? <a href="{{ url_for('main.register') }}">Create an account</a></p>
+    </div>
+  </section>
+</div>
+{% endblock %}

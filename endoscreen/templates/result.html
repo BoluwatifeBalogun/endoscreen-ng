@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import icon, risk_badge, csrf with context %}
+{% block title %}Result for {{ p.patient_ref }}{% endblock %}
+{% block body_class %}page-app page-result{% endblock %}
+{% set risk_color = {'Low': '#15803D', 'Moderate': '#B45309', 'High': '#B91C1C'}[p.risk_level] %}
+{% block content %}
+<div class="container app">
+  <header class="page-head">
+    <div>
+      <a class="back-link no-print" href="{{ url_for('admin.records') if g.admin else url_for('main.dashboard') }}">{{ icon('arrow-left', 16) }}{{ 'All records' if g.admin else 'Dashboard' }}</a>
+      <h1>Screening result</h1>
+      <p class="muted">Patient <strong>{{ p.patient_ref }}</strong> · {{ p.created_at|naira_date }} UTC · screened by {{ p.user.name }}, {{ p.user.facility }}</p>
+    </div>
+    <div class="head-actions no-print">
+      <button class="btn btn-ghost" type="button" data-print>{{ icon('printer', 18) }}Print</button>
+      {% if g.user %}<a class="btn btn-primary" href="{{ url_for('main.screen') }}">{{ icon('plus', 18) }}New screening</a>{% endif %}
+    </div>
+  </header>
+
+  {% if r.urgent_flags %}
+  <div class="alert alert-urgent" role="alert">{{ icon('alert-triangle', 20) }}
+    <div><strong>Needs attention today</strong><ul>{% for f in r.urgent_flags %}<li>{{ f }}</li>{% endfor %}</ul></div>
+  </div>
+  {% endif %}
+
+  <div class="result-grid">
+    <aside class="result-side">
+      <div class="card gauge-card beam risk-tone-{{ p.risk_level|lower }}">
+        <div class="gauge" role="img" aria-label="Estimated likelihood of hormonal imbalance: {{ p.p_imbalance|likelihood }}. {{ p.risk_level }} risk.">
+          <svg viewBox="0 0 200 116">
+            <path d="M16 104a84 84 0 0 1 168 0" fill="none" stroke="#E8F7EF" stroke-width="16" stroke-linecap="round"/>
+            <path class="gauge-arc" data-gauge="{{ p.p_imbalance|round(3) }}" d="M16 104a84 84 0 0 1 168 0" fill="none" stroke="{{ risk_color }}" stroke-width="16" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="{{ (100 * (1 - p.p_imbalance))|round(1) }}"/>
+            {% for t in [r.thresholds.moderate, r.thresholds.high] %}
+            <line x1="100" y1="12" x2="100" y2="28" stroke="#fff" stroke-width="3" transform="rotate({{ (-90 + 180 * t)|round(1) }} 100 104)"/>
+            {% endfor %}
+          </svg>
+          <div class="gauge-score"><b data-count="{{ [[(p.p_imbalance * 100)|round|int, 99]|min, 1]|max }}" data-prefix="{{ '>' if p.p_imbalance > 0.99 else '<' if p.p_imbalance < 0.01 else '' }}" data-suffix="%">{{ p.p_imbalance|likelihood }}</b><span>likelihood of imbalance</span></div>
+        </div>
+        {{ risk_badge(p.risk_level, large=true) }}
+        <h2 class="gauge-title">{{ r.headline }}</h2>
+        <p class="gauge-sub">
+          {% if p.risk_level == 'Low' %}No pattern of hormonal imbalance detected
+          {% else %}Pattern closest to <strong>{{ r.top_condition.label }}</strong>{% endif %}
+        </p>
+        <dl class="gauge-meta">
+          <div><dt>Model confidence</dt><dd>{{ p.confidence|likelihood }}</dd></div>
+          <div><dt>Lab values used</dt><dd>{{ r.labs_provided }} of {{ S.LABS|length }}</dd></div>
+          <div><dt>Model</dt><dd>{{ r.model.algorithm }} {{ r.model.version }}</dd></div>
+        </dl>
+        <p class="gauge-scale" aria-hidden="true"><span>Low &lt; {{ r.thresholds.moderate|pct }}</span><span>Moderate</span><span>High ≥ {{ r.thresholds.high|pct }}</span></p>
+      </div>
+      <p class="disclaimer">{{ icon('shield-check', 16) }}<span>Screening aid only. This is not a medical diagnosis and does not replace laboratory tests or specialist review.</span></p>
+    </aside>
+
+    <div class="result-main">
+      <section class="card reveal">
+        <h2 class="card-title">{{ icon('file-text', 18) }}What this means</h2>
+        <p class="lead-sm">{{ r.summary }}</p>
+      </section>
+
+      <section class="card reveal">
+        <h2 class="card-title">{{ icon('bar-chart', 18) }}Likelihood by condition</h2>
+        <ul class="prob-list">
+          {% for pr in r.probabilities %}
+          <li class="{{ 'prob-top' if loop.first }}">
+            <span class="prob-name">{{ pr.label }}</span>
+            <span class="prob-track"><i class="{{ 'prob-normal' if pr.label == S.NORMAL }}" style="--v:{{ pr.probability|round(4) }}"></i></span>
+            <span class="prob-val">{{ pr.probability|likelihood }}</span>
+          </li>
+          {% endfor %}
+        </ul>
+      </section>
+
+      <section class="card reveal">
+        <h2 class="card-title">{{ icon('eye', 18) }}Why this result</h2>
+        <p class="muted">Each finding was swapped for a typical healthy value to see how far the estimate moves. Longer bars carried more weight.</p>
+        {% if r.drivers %}
+        <ul class="drivers">
+          {% for d in r.drivers %}
+          <li>
+            <div class="driver-text"><b>{{ d.label }}</b><small>{{ d.detail }}</small></div>
+            <div class="driver-bar {{ 'up' if d.effect > 0 else 'down' }}"><i style="--v:{{ d.share }}"></i></div>
+            <span class="driver-val {{ 'up' if d.effect > 0 else 'down' }}">{{ icon('plus' if d.effect > 0 else 'minus', 12) }}{{ d.strength }}<span class="sr-only"> effect, {{ 'raises' if d.effect > 0 else 'lowers' }} risk</span></span>
+          </li>
+          {% endfor %}
+        </ul>
+        <p class="legend"><span><span class="key key-up"></span>Raises risk</span><span><span class="key key-down"></span>Lowers risk</span><span class="legend-note">Bar length is relative to the strongest finding</span></p>
+        {% else %}
+        <p>No single finding moved the estimate by a meaningful amount. The result reflects the overall picture.</p>
+        {% endif %}
+      </section>
+
+      <section class="card reveal">
+        <h2 class="card-title">{{ icon('activity', 18) }}Measurements against reference ranges</h2>
+        <div class="table-wrap">
+          <table class="table table-compact">
+            <thead><tr><th scope="col">Measurement</th><th scope="col" class="num">Value</th><th scope="col">Reference</th><th scope="col">Status</th></tr></thead>
+            <tbody>
+              {% for f in r.range_flags %}
+              <tr><td>{{ f.label }}</td><td class="num">{{ f.value }} <small>{{ f.unit }}</small></td><td>{{ f.reference or '' }}</td>
+                <td><span class="status status-{{ f.level }}">{{ icon('check' if f.level == 'ok' else 'alert-circle', 13) }}{{ f.status }}</span></td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% if r.labs_provided == 0 %}<p class="hint">No laboratory values were entered for this screening.</p>{% endif %}
+      </section>
+
+      <section class="card reveal">
+        <h2 class="card-title">{{ icon('clipboard', 18) }}Recommended next steps</h2>
+        <ol class="recs">
+          {% for rec in p.recommendations %}
+          <li class="rec rec-{{ rec.category|lower|replace(' ', '-') }}">
+            <span class="rec-cat">{{ rec.category }}</span>
+            <p>{{ rec.advice_text }}</p>
+          </li>
+          {% endfor %}
+        </ol>
+      </section>
+
+      <details class="card inputs">
+        <summary><span class="card-title">{{ icon('layers', 18) }}Data entered for this screening</span>{{ icon('chevron-right', 18) }}</summary>
+        <dl class="input-grid">
+          <div><dt>Age</dt><dd>{{ inputs.age|int }} years</dd></div>
+          <div><dt>Sex</dt><dd>{{ inputs.sex }}</dd></div>
+          <div><dt>Weight</dt><dd>{{ inputs.weight_kg }} kg</dd></div>
+          <div><dt>Height</dt><dd>{{ inputs.height_cm }} cm</dd></div>
+          <div><dt>BMI</dt><dd>{{ r.bmi }} kg/m²</dd></div>
+          <div><dt>Blood pressure</dt><dd>{{ inputs.systolic_bp|int }}/{{ inputs.diastolic_bp|int }} mmHg</dd></div>
+          <div><dt>Sleep</dt><dd>{{ inputs.sleep_hours }} hours</dd></div>
+          <div><dt>Exercise</dt><dd>{{ inputs.exercise_level }}</dd></div>
+          <div><dt>Menstrual pattern</dt><dd>{{ inputs.menstrual_pattern }}</dd></div>
+          <div><dt>Family history</dt><dd>{{ 'Yes' if inputs.family_history else 'No' }}</dd></div>
+          {% for name, spec in S.LABS.items() %}
+          <div><dt>{{ spec[0] }}</dt><dd>{% if inputs[name] is not none %}{{ inputs[name] }} {{ spec[1] }}{% else %}Not measured{% endif %}</dd></div>
+          {% endfor %}
+        </dl>
+        <p class="input-symptoms"><strong>Symptoms reported:</strong>
+          {% set ns = namespace(any=false) %}
+          {% for name in S.SYMPTOMS if inputs.get(name) %}{% set ns.any = true %}<span class="tag">{{ S.SYMPTOMS[name][0] }}</span>{% endfor %}
+          {% if not ns.any %}None{% endif %}
+        </p>
+      </details>
+    </div>
+  </div>
+</div>
+{% endblock %}

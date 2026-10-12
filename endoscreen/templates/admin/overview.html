@@ -1,0 +1,58 @@
+{% extends "admin/layout.html" %}
+{% from "partials/macros.html" import icon, risk_badge %}
+{% block title %}Admin overview{% endblock %}
+{% block admin %}
+<header class="page-head">
+  <div><h1>Overview</h1><p class="muted">Usage across facilities, states and geopolitical zones.</p></div>
+  <a class="btn btn-ghost" href="{{ url_for('admin.export_records') }}">{{ icon('download', 18) }}Export records</a>
+</header>
+
+<section class="kpis" aria-label="Summary figures">
+  <div class="kpi spot"><span class="kpi-icon">{{ icon('clipboard', 18) }}</span><span class="kpi-label">Screenings</span><b data-count="{{ total }}">{{ total }}</b><small>{{ by_risk.get('High', 0) }} high risk</small></div>
+  <div class="kpi spot"><span class="kpi-icon">{{ icon('users', 18) }}</span><span class="kpi-label">Health workers</span><b data-count="{{ users }}">{{ users }}</b><small>{{ active_users }} active</small></div>
+  <div class="kpi spot"><span class="kpi-icon">{{ icon('map-pin', 18) }}</span><span class="kpi-label">States with screenings</span><b data-count="{{ states_covered }}">{{ states_covered }}</b><small>of 36 states and the FCT</small></div>
+  <div class="kpi spot"><span class="kpi-icon">{{ icon('cpu', 18) }}</span><span class="kpi-label">Active model</span>
+    {% if active_model %}<b class="kpi-text">{{ active_model.algorithm }}</b><small>{{ active_model.version }} · accuracy {{ active_model.accuracy|pct(1) }}</small>
+    {% else %}<b class="kpi-text">None</b><small>Train a model under Datasets</small>{% endif %}</div>
+</section>
+
+<div class="perf-grid">
+  <section class="card">
+    <h2 class="card-title">{{ icon('bar-chart', 18) }}Screenings in the last 14 days</h2>
+    {% set peak = [trend|map(attribute='n')|max, 1]|max %}
+    <div class="trend" role="img" aria-label="Daily screenings for the last 14 days. Peak {{ peak }} in a day.">
+      {% for t in trend %}
+      <div class="trend-col" title="{{ t.day.strftime('%d %b') }}: {{ t.n }}"><em>{{ t.n if t.n }}</em><i style="--v:{{ (t.n / peak)|round(3) }}"></i><span>{{ t.day.strftime('%d') }}</span></div>
+      {% endfor %}
+    </div>
+    <p class="hint">{{ trend[0].day.strftime('%d %b') }} to {{ trend[-1].day.strftime('%d %b %Y') }} (UTC)</p>
+  </section>
+  <section class="card">
+    <h2 class="card-title">{{ icon('map-pin', 18) }}Screenings by geopolitical zone</h2>
+    {% set zpeak = [zones|map(attribute=1)|max, 1]|max %}
+    <ul class="hbars">
+      {% for zone, n in zones %}<li><span>{{ zone }}</span><span class="hbar-track"><i style="--v:{{ (n / zpeak)|round(3) }}"></i></span><em>{{ n }}</em></li>{% endfor %}
+    </ul>
+  </section>
+</div>
+
+<div class="perf-grid">
+  <section class="card">
+    <h2 class="card-title">{{ icon('activity', 18) }}Predicted class</h2>
+    {% set rpeak = [by_result|map(attribute=1)|max, 1]|max %}
+    <ul class="hbars">
+      {% for label, n in by_result %}<li><span>{{ S.CLASS_SHORT[label] }}</span><span class="hbar-track"><i style="--v:{{ (n / rpeak)|round(3) }}"></i></span><em>{{ n }}</em></li>{% endfor %}
+    </ul>
+  </section>
+  <section class="card">
+    <h2 class="card-title">{{ icon('clock', 18) }}Latest screenings</h2>
+    {% if latest %}
+    <ul class="feed">
+      {% for p in latest %}
+      <li><a href="{{ url_for('main.result', prediction_id=p.prediction_id) }}"><b>{{ p.patient_ref }}</b><small>{{ p.user.facility }}, {{ p.user.state }} · {{ p.created_at|naira_date }}</small></a>{{ risk_badge(p.risk_level) }}</li>
+      {% endfor %}
+    </ul>
+    {% else %}<div class="empty empty-sm">{{ icon('clipboard', 24) }}<p>No screenings have been recorded yet.</p></div>{% endif %}
+  </section>
+</div>
+{% endblock %}

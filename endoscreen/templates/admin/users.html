@@ -1,0 +1,43 @@
+{% extends "admin/layout.html" %}
+{% from "partials/macros.html" import icon, csrf, confirm_form with context %}
+{% block title %}Users{% endblock %}
+{% block admin %}
+<header class="page-head">
+  <div><h1>Users</h1><p class="muted">Registered health workers. Deactivating blocks sign-in but keeps records.</p></div>
+  <form class="filters" method="get" role="search">
+    <div class="input-wrap input-search">{{ icon('search', 16) }}<label class="sr-only" for="q">Search users</label>
+      <input id="q" name="q" type="search" value="{{ q }}" placeholder="Name, email, facility or state"></div>
+    <button class="btn btn-ghost btn-sm" type="submit">Search</button>
+  </form>
+</header>
+<section class="panel">
+  {% if rows %}
+  <div class="table-wrap">
+    <table class="table table-stack">
+      <caption class="sr-only">Registered users</caption>
+      <thead><tr><th scope="col">Name</th><th scope="col">Cadre</th><th scope="col">Facility</th><th scope="col">State</th><th scope="col" class="num">Screenings</th><th scope="col">Status</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+      <tbody>
+        {% for u in rows %}
+        <tr>
+          <td data-label="Name"><b>{{ u.name }}</b><br><small>{{ u.email }}</small></td>
+          <td data-label="Cadre">{{ u.cadre }}</td>
+          <td data-label="Facility">{{ u.facility }}</td>
+          <td data-label="State">{{ u.state }}<br><small>{{ S.STATE_TO_ZONE.get(u.state, '') }}</small></td>
+          <td data-label="Screenings" class="num">{{ counts.get(u.user_id, 0) }}</td>
+          <td data-label="Status"><span class="status status-{{ 'ok' if u.is_active else 'muted' }}">{{ icon('check' if u.is_active else 'minus', 13) }}{{ 'Active' if u.is_active else 'Deactivated' }}</span></td>
+          <td class="actions">
+            <form method="post" action="{{ url_for('admin.toggle_user', user_id=u.user_id) }}" class="inline-form">{{ csrf() }}
+              <button class="icon-btn" type="submit" aria-label="{{ 'Deactivate' if u.is_active else 'Reactivate' }} {{ u.name }}" title="{{ 'Deactivate' if u.is_active else 'Reactivate' }}">{{ icon('power', 16) }}</button></form>
+            {{ confirm_form(url_for('admin.delete_user', user_id=u.user_id), 'Delete this user?', u.name ~ ' and all ' ~ counts.get(u.user_id, 0) ~ ' of their screening records will be removed permanently.', 'Delete user', 'Delete ' ~ u.name) }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="table-foot">{{ rows|length }} {{ 'user' if rows|length == 1 else 'users' }}</p>
+  {% else %}
+  <div class="empty">{{ icon('users', 28) }}<h3>{{ 'No users match' if q else 'No users yet' }}</h3><p>{{ 'Try a different search term.' if q else 'Health workers appear here once they create an account.' }}</p></div>
+  {% endif %}
+</section>
+{% endblock %}

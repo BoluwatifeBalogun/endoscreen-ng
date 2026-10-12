@@ -1,0 +1,100 @@
+{% from "partials/macros.html" import icon, logo, csrf with context %}
+<!doctype html>
+<html lang="en-NG">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}EndoScreen NG{% endblock %} · Hormonal imbalance screening</title>
+  <meta name="description" content="EndoScreen NG is an AI-based screening aid that helps Nigerian primary healthcare workers flag hormonal imbalance early.">
+  <meta name="theme-color" content="#047857">
+  <meta name="csrf-token" content="{{ csrf_token() }}">
+  <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@500;600;700;800&family=Noto+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}?v={{ app_version }}">
+  <script>document.documentElement.classList.add('js')</script>
+</head>
+<body class="{% block body_class %}{% endblock %}">
+<a class="skip-link" href="#main">Skip to main content</a>
+
+{% block nav %}
+<header class="nav-wrap" data-nav>
+  <nav class="nav" aria-label="Main">
+    <a class="brand" href="{{ url_for('main.landing') }}">{{ logo(32) }}<span>EndoScreen <b>NG</b></span></a>
+    <button class="nav-toggle" type="button" aria-expanded="false" aria-controls="nav-links" aria-label="Open menu" data-nav-toggle>{{ icon('menu', 22) }}</button>
+    <div class="nav-links" id="nav-links">
+      {% if g.user %}
+        <a href="{{ url_for('main.dashboard') }}" {% if request.endpoint == 'main.dashboard' %}aria-current="page"{% endif %}>Dashboard</a>
+        <a href="{{ url_for('main.screen') }}" {% if request.endpoint == 'main.screen' %}aria-current="page"{% endif %}>New screening</a>
+        <a href="{{ url_for('main.performance') }}" {% if request.endpoint == 'main.performance' %}aria-current="page"{% endif %}>Model performance</a>
+      {% elif g.admin %}
+        <a href="{{ url_for('admin.overview') }}">Admin panel</a>
+        <a href="{{ url_for('main.performance') }}" {% if request.endpoint == 'main.performance' %}aria-current="page"{% endif %}>Model performance</a>
+      {% else %}
+        <a href="{{ url_for('main.landing') }}#features">Features</a>
+        <a href="{{ url_for('main.landing') }}#how">How it works</a>
+        <a href="{{ url_for('main.landing') }}#conditions">Conditions</a>
+      {% endif %}
+      <span class="nav-spacer"></span>
+      {% if g.user or g.admin %}
+        <span class="nav-user" title="{{ (g.user or g.admin).email }}">{{ icon('user', 16) }}{{ (g.user or g.admin).name.split()[0] }}</span>
+        <form method="post" action="{{ url_for('main.logout') }}" class="inline-form">{{ csrf() }}
+          <button class="btn btn-ghost btn-sm" type="submit">{{ icon('log-out', 16) }}Sign out</button>
+        </form>
+      {% else %}
+        <a class="nav-signin" href="{{ url_for('main.login') }}">Sign in</a>
+        <a class="btn btn-primary btn-sm" href="{{ url_for('main.register') }}">Create account</a>
+      {% endif %}
+    </div>
+  </nav>
+</header>
+{% endblock %}
+
+<div class="toasts" aria-live="polite">
+  {% for category, message in get_flashed_messages(with_categories=true) %}
+  <div class="toast toast-{{ category }}" role="status">
+    {{ icon({'success': 'check-circle', 'error': 'alert-triangle'}.get(category, 'info'), 18) }}
+    <span>{{ message }}</span>
+    <button type="button" class="toast-close" aria-label="Dismiss message" data-dismiss>{{ icon('x', 16) }}</button>
+  </div>
+  {% endfor %}
+</div>
+
+<main id="main" tabindex="-1">{% block content %}{% endblock %}</main>
+
+{% block footer %}
+<footer class="footer">
+  <div class="container footer-grid">
+    <div>
+      <a class="brand brand-light" href="{{ url_for('main.landing') }}">{{ logo(28) }}<span>EndoScreen <b>NG</b></span></a>
+      <p>An AI-based hormonal imbalance prediction system for primary healthcare across Nigeria's 36 states and the FCT.</p>
+    </div>
+    <div class="footer-note">
+      {{ icon('shield-check', 18) }}
+      <p><strong>Screening aid, not a diagnosis.</strong> Results support clinical judgement and referral decisions. They do not replace laboratory investigation or review by a qualified clinician.</p>
+    </div>
+  </div>
+  <div class="container footer-base">
+    <span>EndoScreen NG v{{ app_version }}</span>
+    {% if active_model %}<span>Active model: {{ active_model.algorithm }} {{ active_model.version }}</span>{% endif %}
+  </div>
+</footer>
+{% endblock %}
+
+<dialog class="dialog" id="confirm-dialog" aria-labelledby="confirm-title">
+  <form method="dialog">
+    <div class="dialog-icon">{{ icon('alert-triangle', 22) }}</div>
+    <h2 id="confirm-title">Are you sure?</h2>
+    <p id="confirm-body"></p>
+    <div class="dialog-actions">
+      <button class="btn btn-ghost" value="cancel">Cancel</button>
+      <button class="btn btn-danger" value="confirm" id="confirm-ok">Delete</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="{{ url_for('static', filename='js/app.js') }}?v={{ app_version }}" defer></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

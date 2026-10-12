@@ -1,0 +1,51 @@
+{% extends "admin/layout.html" %}
+{% from "partials/macros.html" import icon, risk_badge, pager, confirm_form with context %}
+{% block title %}Screening records{% endblock %}
+{% block admin %}
+<header class="page-head">
+  <div><h1>Screening records</h1><p class="muted">Every prediction made on the system, newest first.</p></div>
+  <a class="btn btn-ghost" href="{{ url_for('admin.export_records', q=q, risk=risk) }}">{{ icon('download', 18) }}Export CSV</a>
+</header>
+<section class="panel">
+  <div class="panel-head">
+    <form class="filters" method="get" role="search">
+      <div class="input-wrap input-search">{{ icon('search', 16) }}<label class="sr-only" for="q">Search records</label>
+        <input id="q" name="q" type="search" value="{{ q }}" placeholder="Card number, worker, facility or state"></div>
+      <div class="chips" role="group" aria-label="Filter by risk level">
+        <a class="chip {{ 'chip-on' if not risk }}" href="{{ url_for('admin.records', q=q) }}">All</a>
+        {% for level in ['High', 'Moderate', 'Low'] %}<a class="chip {{ 'chip-on' if risk == level }}" href="{{ url_for('admin.records', q=q, risk=level) }}">{{ level }}</a>{% endfor %}
+      </div>
+      {% if risk %}<input type="hidden" name="risk" value="{{ risk }}">{% endif %}
+      <button class="btn btn-ghost btn-sm" type="submit">Search</button>
+    </form>
+  </div>
+  {% if rows %}
+  <div class="table-wrap">
+    <table class="table table-stack">
+      <caption class="sr-only">Screening records</caption>
+      <thead><tr><th scope="col">Patient ref</th><th scope="col">Health worker</th><th scope="col">Date</th><th scope="col">Risk</th><th scope="col">Predicted class</th><th scope="col" class="num">Likelihood</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+      <tbody>
+        {% for p in rows %}
+        <tr>
+          <td data-label="Patient ref"><a class="row-link" href="{{ url_for('main.result', prediction_id=p.prediction_id) }}">{{ p.patient_ref }}</a></td>
+          <td data-label="Health worker">{{ p.user.name }}<br><small>{{ p.user.facility }}, {{ p.user.state }}</small></td>
+          <td data-label="Date">{{ p.created_at|naira_date }}</td>
+          <td data-label="Risk">{{ risk_badge(p.risk_level) }}</td>
+          <td data-label="Predicted class">{{ S.CLASS_SHORT[p.result] }}</td>
+          <td data-label="Likelihood" class="num">{{ p.p_imbalance|likelihood }}</td>
+          <td class="actions">
+            <a class="icon-btn" href="{{ url_for('main.result', prediction_id=p.prediction_id) }}" aria-label="View record {{ p.patient_ref }}" title="View">{{ icon('eye', 16) }}</a>
+            {{ confirm_form(url_for('admin.delete_record', prediction_id=p.prediction_id), 'Delete this record?', 'Screening #' ~ p.prediction_id ~ ' for ' ~ p.patient_ref ~ ' will be removed permanently.', 'Delete record', 'Delete record ' ~ p.patient_ref) }}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="table-foot">{{ matched }} {{ 'record' if matched == 1 else 'records' }}</p>
+  {{ pager('admin.records', page, pages, {'q': q, 'risk': risk}) }}
+  {% else %}
+  <div class="empty">{{ icon('clipboard', 28) }}<h3>{{ 'No records match' if (q or risk) else 'No records yet' }}</h3><p>{{ 'Try a different search or clear the filter.' if (q or risk) else 'Records appear here as health workers screen patients.' }}</p></div>
+  {% endif %}
+</section>
+{% endblock %}

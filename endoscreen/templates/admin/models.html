@@ -1,0 +1,39 @@
+{% extends "admin/layout.html" %}
+{% from "partials/macros.html" import icon, csrf with context %}
+{% block title %}Models{% endblock %}
+{% block admin %}
+<header class="page-head">
+  <div><h1>Models</h1><p class="muted">Every trained model version with its held-out test metrics. One model is active at a time.</p></div>
+  <a class="btn btn-ghost" href="{{ url_for('main.performance') }}">{{ icon('bar-chart', 18) }}Full comparison</a>
+</header>
+<section class="panel">
+  {% if rows %}
+  <div class="table-wrap">
+    <table class="table table-stack">
+      <caption class="sr-only">Trained models</caption>
+      <thead><tr><th scope="col">Algorithm</th><th scope="col">Version</th><th scope="col" class="num">Accuracy</th><th scope="col" class="num">Precision</th><th scope="col" class="num">Recall</th><th scope="col" class="num">F1</th><th scope="col" class="num">AUC-ROC</th><th scope="col">Status</th></tr></thead>
+      <tbody>
+        {% for mdl in rows %}
+        <tr class="{{ 'row-best' if mdl.is_active }}">
+          <td data-label="Algorithm"><b>{{ mdl.algorithm }}</b>{% if mdl.is_best %} <span class="pill pill-green">Best of {{ mdl.version }}</span>{% endif %}<br><small>{{ mdl.dataset.name if mdl.dataset else '' }} · {{ mdl.trained_at|naira_date(false) }}</small></td>
+          <td data-label="Version"><a href="{{ url_for('main.performance', version=mdl.version, model=mdl.algorithm_key) }}">{{ mdl.version }}</a></td>
+          <td data-label="Accuracy" class="num">{{ '%.3f'|format(mdl.accuracy) }}</td>
+          <td data-label="Precision" class="num">{{ '%.3f'|format(mdl.precision) }}</td>
+          <td data-label="Recall" class="num">{{ '%.3f'|format(mdl.recall) }}</td>
+          <td data-label="F1" class="num">{{ '%.3f'|format(mdl.f1_score) }}</td>
+          <td data-label="AUC-ROC" class="num">{{ '%.3f'|format(mdl.auc_roc) }}</td>
+          <td data-label="Status">
+            {% if mdl.is_active %}<span class="status status-ok">{{ icon('check', 13) }}Active</span>
+            {% else %}<form method="post" action="{{ url_for('admin.activate_model', model_id=mdl.model_id) }}" class="inline-form">{{ csrf() }}<button class="btn btn-ghost btn-sm" type="submit">Activate</button></form>{% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  <p class="table-foot">The active model scores all new screenings. Earlier predictions keep a link to the model that produced them.</p>
+  {% else %}
+  <div class="empty">{{ icon('cpu', 28) }}<h3>No trained models</h3><p>Run <code>python -m endoscreen.ml.train</code> or train from the Datasets page.</p></div>
+  {% endif %}
+</section>
+{% endblock %}

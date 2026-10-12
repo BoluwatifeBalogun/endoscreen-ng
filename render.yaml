@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: endoscreen-ng
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn wsgi:app --workers 1 --threads 4 --timeout 180
+    healthCheckPath: /healthz
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.5
+      - key: SECRET_KEY
+        generateValue: true
+      - key: ADMIN_EMAIL
+        value: admin@endoscreen.ng
+      - key: ADMIN_PASSWORD
+        sync: false        # set a strong password in the Render dashboard
+      - key: DATABASE_URL
+        sync: false        # external MySQL/PostgreSQL URL so accounts survive redeploys

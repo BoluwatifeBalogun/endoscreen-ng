@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import icon, risk_badge, pager, confirm_form with context %}
+{% block title %}Dashboard{% endblock %}
+{% block body_class %}page-app{% endblock %}
+{% block content %}
+<div class="container app">
+  <header class="page-head">
+    <div>
+      <p class="eyebrow eyebrow-plain">{{ g.user.facility }} · {{ g.user.state }}</p>
+      <h1>Good day, {{ g.user.name.split()[0] }}</h1>
+      <p class="muted">Your screening history and quick figures.</p>
+    </div>
+    <a class="btn btn-primary shimmer" href="{{ url_for('main.screen') }}">{{ icon('plus', 18) }}New screening</a>
+  </header>
+
+  <section class="kpis" aria-label="Summary figures">
+    <div class="kpi spot reveal"><span class="kpi-icon">{{ icon('clipboard', 18) }}</span><span class="kpi-label">Total screenings</span><b data-count="{{ total }}">{{ total }}</b><small>{{ week }} in the last 7 days</small></div>
+    <div class="kpi spot reveal" style="--i:1"><span class="kpi-icon kpi-high">{{ icon('alert-triangle', 18) }}</span><span class="kpi-label">High risk</span><b data-count="{{ counts.High }}">{{ counts.High }}</b><small>{{ ((counts.High / total) if total else 0)|pct }} of all screenings</small></div>
+    <div class="kpi spot reveal" style="--i:2"><span class="kpi-icon kpi-mod">{{ icon('alert-circle', 18) }}</span><span class="kpi-label">Moderate risk</span><b data-count="{{ counts.Moderate }}">{{ counts.Moderate }}</b><small>Discuss with supervising clinician</small></div>
+    <div class="kpi spot reveal" style="--i:3"><span class="kpi-icon kpi-low">{{ icon('check-circle', 18) }}</span><span class="kpi-label">Low risk</span><b data-count="{{ counts.Low }}">{{ counts.Low }}</b><small>Reassure and re-screen if needed</small></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2>Screening history</h2>
+      <form class="filters" method="get" role="search">
+        <div class="input-wrap input-search">
+          {{ icon('search', 16) }}
+          <label class="sr-only" for="q">Search by patient reference</label>
+          <input id="q" name="q" type="search" value="{{ q }}" placeholder="Search card number">
+        </div>
+        <div class="chips" role="group" aria-label="Filter by risk level">
+          <a class="chip {{ 'chip-on' if not risk }}" href="{{ url_for('main.dashboard', q=q) }}" {% if not risk %}aria-current="true"{% endif %}>All</a>
+          {% for level in ['High', 'Moderate', 'Low'] %}
+          <a class="chip {{ 'chip-on' if risk == level }}" href="{{ url_for('main.dashboard', q=q, risk=level) }}" {% if risk == level %}aria-current="true"{% endif %}>{{ level }}</a>
+          {% endfor %}
+        </div>
+        {% if risk %}<input type="hidden" name="risk" value="{{ risk }}">{% endif %}
+        <button class="btn btn-ghost btn-sm" type="submit">Search</button>
+      </form>
+    </div>
+
+    {% if rows %}
+    <div class="table-wrap">
+      <table class="table table-stack">
+        <caption class="sr-only">Your screenings, newest first</caption>
+        <thead><tr><th scope="col">Patient ref</th><th scope="col">Date</th><th scope="col">Risk</th><th scope="col">Closest pattern</th><th scope="col" class="num">Likelihood</th><th scope="col"><span class="sr-only">Actions</span></th></tr></thead>
+        <tbody>
+          {% for p in rows %}
+          {% set d = p.detail %}
+          <tr>
+            <td data-label="Patient ref"><a class="row-link" href="{{ url_for('main.result', prediction_id=p.prediction_id) }}">{{ p.patient_ref }}</a></td>
+            <td data-label="Date">{{ p.created_at|naira_date }}</td>
+            <td data-label="Risk">{{ risk_badge(p.risk_level) }}</td>
+            <td data-label="Closest pattern">{{ d.top_condition.short if p.risk_level != 'Low' else 'No imbalance' }}</td>
+            <td data-label="Likelihood" class="num">{{ p.p_imbalance|likelihood }}</td>
+            <td class="actions">
+              <a class="icon-btn" href="{{ url_for('main.result', prediction_id=p.prediction_id) }}" aria-label="View result for {{ p.patient_ref }}" title="View result">{{ icon('eye', 16) }}</a>
+              {{ confirm_form(url_for('main.delete_result', prediction_id=p.prediction_id), 'Delete this screening?', 'The record for ' ~ p.patient_ref ~ ' will be removed permanently.', 'Delete', 'Delete screening for ' ~ p.patient_ref) }}
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="table-foot">{{ matched }} {{ 'record' if matched == 1 else 'records' }}{{ ' match your filters' if (q or risk) }}</p>
+    {{ pager('main.dashboard', page, pages, {'q': q, 'risk': risk}) }}
+    {% elif total %}
+    <div class="empty">{{ icon('search', 28) }}<h3>No screenings match</h3><p>Try a different card number or clear the risk filter.</p><a class="btn btn-ghost" href="{{ url_for('main.dashboard') }}">Clear filters</a></div>
+    {% else %}
+    <div class="empty">{{ icon('clipboard', 28) }}<h3>No screenings yet</h3><p>Your first screening takes under a minute. You will need the patient's card number, basic measurements and reported symptoms.</p><a class="btn btn-primary" href="{{ url_for('main.screen') }}">{{ icon('plus', 18) }}Start first screening</a></div>
+    {% endif %}
+  </section>
+</div>
+{% endblock %}

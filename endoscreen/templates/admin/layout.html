@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% from "partials/macros.html" import icon %}
+{% block body_class %}page-app page-admin{% endblock %}
+{% block content %}
+<div class="container admin">
+  <aside class="admin-side" aria-label="Admin sections">
+    <p class="admin-side-title">Admin panel</p>
+    <nav>
+      {% for endpoint, label, ic in [('admin.overview', 'Overview', 'grid'), ('admin.users', 'Users', 'users'), ('admin.records', 'Screening records', 'clipboard'), ('admin.datasets', 'Datasets', 'database'), ('admin.models', 'Models', 'cpu')] %}
+      <a href="{{ url_for(endpoint) }}" {% if request.endpoint == endpoint %}aria-current="page"{% endif %}>{{ icon(ic, 18) }}<span>{{ label }}</span></a>
+      {% endfor %}
+    </nav>
+    <p class="admin-side-foot">{{ icon('user', 14) }}{{ g.admin.name }}<br><small>{{ g.admin.role }}</small></p>
+  </aside>
+  <div class="admin-main">{% block admin %}{% endblock %}</div>
+</div>
+{% endblock %}
